@@ -1,39 +1,39 @@
 <!DOCTYPE html>
-<html lang="ja"><head><base target="_top"><meta charset="utf-8">
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root{--paper:#eef1f5;--ink:#1b2430;--red:#d6303b;--hl:#ffe45c;--line:#c9d0da}
 @media(prefers-color-scheme:dark){:root{--paper:#161b23;--ink:#e8ecf2;--line:#343d4b}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,"Hiragino Sans","Noto Sans JP",sans-serif}
-#app{max-width:480px;margin:0 auto;padding:16px}
+body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.6 system-ui,"Hiragino Sans","Noto Sans JP",sans-serif}
+#app{max-width:640px;margin:0 auto;padding:12px}
 h1,.title{font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900}
 h1{font-size:28px;margin:8px 0 4px}
 .sub{color:var(--red);font-weight:700;margin:0 0 16px}
-input{width:100%;font-size:18px;padding:12px;border:2px solid var(--ink);border-radius:4px;background:transparent;color:var(--ink);margin:6px 0}
-button{font:inherit;font-weight:700;padding:12px 16px;border:2px solid var(--ink);border-radius:4px;background:var(--ink);color:var(--paper);cursor:pointer}
+input{width:100%;font-size:20px;padding:14px;border:2px solid var(--ink);border-radius:4px;background:transparent;color:var(--ink);margin:6px 0}
+button{font:inherit;font-size:20px;font-weight:700;padding:16px 18px;border:2px solid var(--ink);border-radius:4px;background:var(--ink);color:var(--paper);cursor:pointer}
 button.red{background:var(--red);border-color:var(--red);color:#fff}
 button.ghost{background:transparent;color:var(--ink)}
 button:disabled{opacity:.35}
 button:focus-visible,input:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 .row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
 .bar{display:flex;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:12px;font-weight:700}
-.score{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 16px;font-size:14px}
-.score span{border:1px solid var(--line);padding:2px 8px;border-radius:99px}
+.score{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 16px;font-size:16px}
+.score span{border:1px solid var(--line);padding:3px 10px;border-radius:99px}.score b{margin-right:8px}
 .score .ok{background:var(--hl);color:#1b2430;border-color:var(--hl)}
 .cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
-.card{padding:12px 8px;border:2px solid var(--line);border-radius:4px;background:transparent;color:var(--ink);font-weight:700;text-align:center}
+.card{padding:22px 6px;font-size:clamp(19px,5.6vw,28px);line-height:1.3;word-break:keep-all;overflow-wrap:anywhere;border:2px solid var(--line);border-radius:4px;background:transparent;color:var(--ink);font-weight:700;text-align:center}
 .card.sel{border-color:var(--red);background:var(--hl);color:#1b2430}
-.cover{border:2px solid var(--ink);border-left:12px solid var(--red);padding:14px;margin:10px 0;font-size:20px;background:transparent;color:var(--ink);text-align:left;width:100%;display:block}
+.cover{border:2px solid var(--ink);border-left:12px solid var(--red);padding:16px;margin:10px 0;font-size:clamp(22px,6vw,30px);background:transparent;color:var(--ink);text-align:left;width:100%;display:block}
 .cover.win{background:var(--hl);color:#1b2430}
-.cover small{display:block;font:14px system-ui;color:var(--red);font-weight:700}
+.cover:disabled{opacity:1}.cover small{display:block;font:16px system-ui;color:var(--red);font-weight:700}
 .msg{padding:10px;border:2px dashed var(--red);margin:10px 0}
 .code{font-size:40px;letter-spacing:.2em;font-weight:900}
 img{display:block;margin:8px auto;background:#fff;padding:6px}
-h2{font-size:15px;margin:16px 0 4px}
+h2{font-size:18px;margin:16px 0 4px}
 </style></head><body><div id="app"></div>
+<script src="config.js"></script>
 <script>
-const GAS='https://script.google.com/macros/s/AKfycbyxaCfEd4WQRtsvcIWfCDibWHi47QxAOdTkLRGJCX1QUcdYobnVrWeF2AnuV2MJnGrj/exec';
 const ROOM=new URLSearchParams(location.search).get('room')||'';
 let S=null,me=null,code=null,base=location.origin+location.pathname,sel={t:null,b:null},err='';
 const $=document.getElementById('app');
@@ -76,7 +76,7 @@ function render(){
   }
   const P=S.players,nm=id=>(P.find(x=>x.id===id)||{}).name,host=S.host===S.me;
   let h=`<div class="bar"><span>部屋 ${S.code}</span><span>${S.round?'第'+S.round+'号':'準備中'}</span></div>`;
-  h+=`<div class="score">`+P.map(x=>`<span class="${S.phase==='pick'&&x.done?'ok':''}">${esc(x.name)} ${x.score}</span>`).join('')+`</div>`;
+  h+=`<div class="score">`+P.map(x=>`<span class="${S.phase==='pick'&&x.done?'ok':''}"><b>${esc(x.name)}</b>${x.score}点</span>`).join('')+`</div>`;
   if(S.phase==='lobby'){
     const url=base?base+'?room='+S.code:'';
     h+=`<p>参加者が集まったら開始します（${P.length}人）</p><div class="code">${S.code}</div>`;
@@ -92,16 +92,21 @@ function render(){
       h+=`<div class="cover title">${ok?esc(S.hand.t[sel.t]+' '+S.hand.b[sel.b]):'上と下を1枚ずつ選んでください'}</div>`;
       h+=`<button class="red" ${ok?'':'disabled'} onclick="act('submit',{t:sel.t,b:sel.b})">このタイトルで提出</button>`;
     }
+  }else if(S.phase==='present'){
+    const mine=S.turn===S.me;
+    h+=`<div class="msg">${mine?'あなたの番です。準備ができたら発表してください':esc(nm(S.turn))+' さんの発表を待っています'}</div>`;
+    if(mine)h+=`<button class="red" style="width:100%" onclick="act('reveal')">発表する</button>`;
+    h+=S.subs.map(s=>`<div class="cover title"><small>${esc(nm(s.id))}</small>${esc(s.text)}</div>`).join('');
   }else if(S.phase==='judge'){
     const chief=S.chief===S.me;
     h+=`<div class="msg">${chief?'あなたが横暴編集長です。採用するタイトルを選んでください（自分の案は選べません）':esc(nm(S.chief))+' 編集長が選んでいます'}</div>`;
-    h+=S.subs.map(s=>`<button class="cover title" ${chief&&s.id!==S.me?`onclick="act('choose',{winner:'${s.id}'})"`:'disabled'}>${esc(s.text)}</button>`).join('');
+    h+=S.subs.map(s=>`<button class="cover title" ${chief&&s.id!==S.me?`onclick="act('choose',{winner:'${s.id}'})"`:'disabled'}><small>${esc(nm(s.id))}</small>${esc(s.text)}</button>`).join('');
   }else if(S.phase==='result'){
     const w=S.subs.find(s=>s.id===S.winner);
     h+=`<div class="msg">${esc(nm(S.chief))} 編集長の決定</div>`;
     h+=`<div class="cover title win"><small>採用：${esc(nm(S.winner))}</small>${esc(w?w.text:'')}</div>`;
     h+=`<h2>ほかの案</h2>`+S.subs.filter(s=>s.id!==S.winner).map(s=>`<div class="cover title"><small>${esc(nm(s.id))}</small>${esc(s.text)}</div>`).join('');
-    h+=host?`<button class="red" onclick="act('next')">次の号へ</button>`:`<p>ホストが次の号に進めます</p>`;
+    h+=S.chief===S.me?`<button class="red" style="width:100%" onclick="act('next')">次の号へ</button>`:`<p>編集長が次の号に進めます</p>`;
   }
   if(err)h+=`<div class="msg">${esc(err)}</div>`;
   $.innerHTML=h;
