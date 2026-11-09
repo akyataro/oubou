@@ -3,13 +3,12 @@
 <title>横暴編集長</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&display=swap" rel="stylesheet">
 <style>
-:root{--paper:#eef1f5;--ink:#1b2430;--red:#d6303b;--hl:#ffe45c;--line:#c9d0da}
-@media(prefers-color-scheme:dark){:root{--paper:#161b23;--ink:#e8ecf2;--line:#343d4b}}
+:root{--paper:#eef1f5;--ink:#1b2430;--red:#d6303b;--blue:#2f64c4;--hl:#ffe45c;--line:#c9d0da;--topbg:#f9d3d6;--botbg:#d3e2fa;--sheet:#fff}
+@media(prefers-color-scheme:dark){:root{--paper:#161b23;--ink:#e8ecf2;--line:#343d4b;--topbg:#5a2a2f;--botbg:#26405f;--sheet:#222a35}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.6 system-ui,"Hiragino Sans","Noto Sans JP",sans-serif}
 #app{max-width:640px;margin:0 auto;padding:12px}
-h1,.title{font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900}
-h1{font-size:28px;margin:8px 0 4px}
+h1{font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:28px;margin:8px 0 4px}
 .sub{color:var(--red);font-weight:700;margin:0 0 16px}
 input{width:100%;font-size:20px;padding:14px;border:2px solid var(--ink);border-radius:4px;background:transparent;color:var(--ink);margin:6px 0}
 button{font:inherit;font-size:20px;font-weight:700;padding:16px 18px;border:2px solid var(--ink);border-radius:4px;background:var(--ink);color:var(--paper);cursor:pointer}
@@ -23,21 +22,46 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--red);outline-of
 .score span{border:1px solid var(--line);padding:3px 10px;border-radius:99px}
 .score i{font-style:normal;color:var(--red);font-weight:700;margin-left:8px}
 .score .ok{background:var(--hl);color:#1b2430;border-color:var(--hl)}
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
-.card{padding:16px 6px;font-size:clamp(19px,5.6vw,28px);line-height:1.3;word-break:keep-all;overflow-wrap:anywhere;border:2px solid var(--line);border-radius:4px;background:transparent;color:var(--ink);font-weight:700;text-align:center}
-.card small{display:block;font-size:13px;color:var(--red);font-weight:700}
-.card.sel{border-color:var(--red);background:var(--hl);color:#1b2430}
-.card:disabled,.cover:disabled{opacity:1}
-.cover{border:2px solid var(--ink);border-left:12px solid var(--red);padding:16px;margin:10px 0;font-size:clamp(22px,6vw,30px);background:transparent;color:var(--ink);text-align:left;width:100%;display:block}
-.cover.win{background:var(--hl);color:#1b2430}
-.cover.dash{border-style:dashed;border-left-style:dashed;opacity:.75}
-.cover small{display:block;font:16px system-ui;color:var(--red);font-weight:700}
 .msg{padding:10px;border:2px dashed var(--red);margin:10px 0}
-.msg small{color:inherit;opacity:.8}
+.msg small{opacity:.8}
 .code{font-size:40px;letter-spacing:.2em;font-weight:900}
 .step{display:flex;align-items:center;justify-content:center;gap:16px;font-size:24px;font-weight:700;margin:8px 0 16px}
 img{display:block;margin:8px auto;background:#fff;padding:6px}
 h2{font-size:18px;margin:16px 0 4px}
+
+/* 札：小説の背表紙風（縦書き） */
+.sp{position:relative;writing-mode:vertical-rl;text-orientation:mixed;text-combine-upright:digits 3;font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:var(--fs,clamp(18px,5.2vw,24px));line-height:1.35;text-align:center;color:var(--ink);padding:34px 7px 28px;margin:0;border:2px solid var(--ink);border-radius:3px;cursor:pointer}
+.sp.top{--c:var(--red);background:linear-gradient(var(--c),var(--c)) top/100% 24px no-repeat,linear-gradient(var(--c),var(--c)) bottom/100% 12px no-repeat,var(--topbg)}
+.sp.bot{--c:var(--blue);background:linear-gradient(var(--c),var(--c)) top/100% 24px no-repeat,linear-gradient(var(--c),var(--c)) bottom/100% 12px no-repeat,var(--botbg)}
+.sp::before,.sp::after{content:"";position:absolute;left:5px;right:5px;border-top:1px solid var(--c)}
+.sp::before{top:29px}.sp::after{bottom:19px}
+.sp .mk{position:absolute;top:0;left:0;right:0;height:24px;line-height:24px;writing-mode:horizontal-tb;font-size:13px;font-style:normal;font-weight:700;color:#fff;text-align:center}
+.sp.sel{transform:translateY(-8px);box-shadow:0 0 0 4px var(--hl),0 10px 14px rgba(0,0,0,.25)}
+.sp:disabled{opacity:1;cursor:default}
+.two{display:flex;flex-direction:row-reverse;gap:8px;margin:8px 0}
+.side{flex:1;padding:8px;border-radius:6px;min-height:150px}
+.side.top{--c:var(--red);background:color-mix(in srgb,var(--red) 13%,transparent)}
+.side.bot{--c:var(--blue);background:color-mix(in srgb,var(--blue) 14%,transparent)}
+.side h3{margin:0 0 8px;font-size:14px;color:var(--c)}
+.rack{display:flex;flex-direction:row-reverse;flex-wrap:wrap;gap:8px;padding-top:8px}
+.pair{display:flex;flex-direction:row-reverse;gap:10px;justify-content:center;margin:10px 0}
+
+/* 完成したタイトル（縦書き1行） */
+.shelf{display:flex;flex-direction:row-reverse;flex-wrap:wrap;gap:10px;margin:10px 0}
+.tsp{display:flex;flex-direction:row-reverse;align-items:stretch;gap:6px;padding:14px 8px 10px;margin:0;border:2px solid var(--ink);border-top:10px solid var(--red);border-radius:3px;background:var(--sheet);color:var(--ink);font:inherit;cursor:pointer}
+.tsp .tt{writing-mode:vertical-rl;text-orientation:mixed;text-combine-upright:digits 3;font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:clamp(22px,6vw,30px);line-height:1.35}
+.tsp .by{writing-mode:vertical-rl;font-size:13px;line-height:1.3;color:var(--red);font-weight:700;align-self:flex-end}
+.tsp .gp{display:inline-block;height:.7em}
+.tsp.win{background:var(--hl);color:#1b2430}
+.tsp.dash{border-style:dashed;opacity:.7}
+.tsp:disabled{opacity:1;cursor:default}
+
+/* 発表画面（画面いっぱい） */
+.stage{position:fixed;inset:0;z-index:20;background:var(--paper);display:flex;flex-direction:column;height:100vh;height:100dvh}
+.stage .pair{flex:1;min-height:0;padding:12px;margin:0}
+.stage .sp{flex:1;display:flex;align-items:center;justify-content:center;font-size:var(--fs)}
+.stagebar{padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.stagebar button{margin:0}
 </style></head><body><div id="app"></div>
 <script src="config.js"></script>
 <script>
@@ -69,14 +93,21 @@ async function poll(){
     if(!S||r.v!==S.v){if(S&&(r.phase!==S.phase||r.round!==S.round))sel={f:null,h:null};S=r;render()}}catch(e){}
 }
 setInterval(poll,3000);poll();
+addEventListener('resize',()=>{if(S&&S.cur)render()});
 
 function start(){
   const n=document.getElementById('name').value,c=document.getElementById('code').value.trim();
   c?act('join',{name:n,code:c}):act('create',{name:n});
 }
 function pick(k,i){sel[k]=i;render()}
-const card=(c,on,fn)=>`<button class="card ${on?'sel':''}" ${fn?`onclick="${fn}"`:'disabled'}><small>${c.k==='T'?'上':'下'}</small>${esc(c.s)}</button>`;
-const cover=(small,text,cls)=>`<div class="cover title ${cls||''}"><small>${esc(small)}</small>${esc(text)}</div>`;
+
+const L=s=>String(s).replace(/\d{1,3}/g,'0').length;
+const spine=(c,o)=>{const t=c.k==='T';return `<button class="sp ${t?'top':'bot'} ${o.on?'sel':''}" ${o.click?`onclick="${o.click}"`:'disabled'}><i class="mk">${t?'上':'下'}</i><span>${esc(c.s)}</span></button>`};
+const sides=(items,lab)=>{const mk=k=>items.filter(x=>x.c.k===k).map(x=>spine(x.c,x)).join('');
+  return `<div class="two"><div class="side top"><h3>${lab[0]}</h3><div class="rack">${mk('T')}</div></div><div class="side bot"><h3>${lab[1]}</h3><div class="rack">${mk('B')}</div></div></div>`};
+const pair=(t,b,fs)=>`<div class="pair" style="--fs:${fs}px"><div class="sp top"><i class="mk">上</i><span>${esc(t)}</span></div><div class="sp bot"><i class="mk">下</i><span>${esc(b)}</span></div></div>`;
+const tsp=(t,b,by,cls,click)=>{const tag=click===undefined?'div':'button';const at=click===undefined?'':click===null?'disabled':`onclick="${click}"`;
+  return `<${tag} class="tsp ${cls||''}" ${at}><span class="tt">${esc(t)}<i class="gp"></i>${esc(b)}</span><span class="by">${esc(by||'')}</span></${tag}>`};
 
 function render(){
   if(!S){
@@ -101,58 +132,53 @@ function render(){
     else h+=`<p>会議は全${S.rounds}回です。ホストが開始するのを待っています</p>`;
 
   }else if(ph==='take'){
-    const my=S.turn===S.me;
+    const my=S.turn===S.me,lab=['上の札','下の札'];
     h+=`<div class="msg">${my?'あなたの番です。場から札を1枚取ってください':esc(nm(S.turn))+' さんが札を選んでいます'}<br><small>取る順：${S.order.map(i=>esc(nm(i))).join(' → ')}</small></div>`;
-    h+=`<h2>場の札</h2><div class="cards">`+S.field.map((c,i)=>card(c,sel.f===i,my?`pick('f',${i})`:null)).join('')+`</div>`;
+    h+=`<h2>場の札</h2>`+sides(S.field.map((c,i)=>({c,on:sel.f===i,click:my?`pick('f',${i})`:null})),lab);
     if(my)h+=`<button class="red wide" ${sel.f===null?'disabled':''} onclick="act('take',{pos:sel.f})">この札を取る</button>`;
-    if(S.taken)h+=`<h2>あなたが取った札（必ず使います）</h2><div class="cards">`+card(S.taken,true,null)+`</div>`;
-    h+=`<h2>あなたの手札</h2><div class="cards">`+S.hand.map(c=>card(c,false,null)).join('')+`</div>`;
+    if(S.taken)h+=`<h2>あなたが取った札（必ず使います）</h2>`+sides([{c:S.taken,on:true}],lab);
+    h+=`<h2>あなたの手札</h2>`+sides(S.hand.map(c=>({c})),lab);
 
   }else if(ph==='write'){
     if(S.mine){
-      h+=`<div class="msg">提出しました。全員の提出を待っています</div>`+cover('あなたのタイトル',S.mine);
+      h+=`<div class="msg">提出しました。全員の提出を待っています</div>`+pair(S.mine.t,S.mine.b,22);
     }else{
       const tk=S.taken;
-      h+=`<h2>取った札（必ず使います）</h2><div class="cards">`+card(tk,true,null)+`</div>`;
-      h+=`<h2>手札から${tk.k==='T'?'下':'上'}の札を1枚選ぶ</h2><div class="cards">`+S.hand.map((c,i)=>c.k!==tk.k?card(c,sel.h===i,`pick('h',${i})`):'').join('')+`</div>`;
-      const ok=sel.h!==null;
-      const hc=ok?S.hand[sel.h]:null;
-      h+=`<div class="cover title">${ok?esc(tk.k==='T'?tk.s+' '+hc.s:hc.s+' '+tk.s):'手札から1枚選んでください'}</div>`;
+      const items=[{c:tk,on:true}].concat(S.hand.map((c,i)=>({c,i})).filter(x=>x.c.k!==tk.k).map(x=>({c:x.c,on:sel.h===x.i,click:`pick('h',${x.i})`})));
+      h+=sides(items,tk.k==='T'?['取った札（必ず使う）','手札から1枚選ぶ']:['手札から1枚選ぶ','取った札（必ず使う）']);
+      const ok=sel.h!==null,hc=ok?S.hand[sel.h]:null;
+      h+=ok?`<div class="shelf" style="justify-content:center">`+tsp(tk.k==='T'?tk.s:hc.s,tk.k==='T'?hc.s:tk.s,'','win')+`</div>`:`<div class="msg">手札から1枚選んでください</div>`;
       h+=`<button class="red wide" ${ok?'':'disabled'} onclick="act('submit',{h:sel.h})">このタイトルで提出</button>`;
     }
 
   }else if(ph==='present'){
     const my=S.turn===S.me;
     if(S.cur){
-      h+=`<div class="msg">${esc(nm(S.cur.id))} さんの発表</div>`+cover(nm(S.cur.id),S.cur.text,'win');
-      if(my)h+=`<button class="red wide" onclick="act('endshow')">発表終了</button>`;
+      const fs=Math.max(18,Math.floor(Math.min((innerHeight-190)/(Math.max(L(S.cur.t),L(S.cur.b))*1.12),(innerWidth-34)/2/1.5)));
+      h+=`<div class="stage">${pair(S.cur.t,S.cur.b,fs)}<div class="stagebar"><button class="red wide" onclick="act('endshow')">発表終了</button></div></div>`;
     }else{
-      h+=`<div class="msg">${my?'あなたの番です。準備ができたら発表してください':esc(nm(S.turn))+' さんの発表を待っています'}</div>`;
+      h+=`<div class="msg">${S.showing?esc(nm(S.turn))+' さんが発表中です。発表者の画面を見てください':my?'あなたの番です。画面を他の人に見せながら発表してください':esc(nm(S.turn))+' さんの発表を待っています'}</div>`;
       if(my)h+=`<button class="red wide" onclick="act('reveal')">発表する</button>`;
+      if(S.mine&&!S.presented.includes(S.me))h+=`<h2>あなたのタイトル（まだ公開されていません）</h2>`+pair(S.mine.t,S.mine.b,22);
     }
-    if(S.mine&&!S.presented.includes(S.me)&&!(S.cur&&S.cur.id===S.me))h+=cover('あなたのタイトル（まだ公開されていません）',S.mine);
 
   }else if(ph==='judge'){
-    h+=`<div class="msg">${isChief?'あなたが横暴編集長です。採用するタイトルを選んでください':esc(nm(S.chief))+' 編集長が選んでいます'}</div>`;
-    h+=S.subs.map(s=>{
-      if(isChief&&s.id===S.me)return cover('あなたの案（選べません）',s.text,'dash');
-      return `<button class="cover title" ${isChief?`onclick="act('choose',{winner:'${s.id}'})"`:'disabled'}><small>${esc(nm(s.id))}</small>${esc(s.text)}</button>`}).join('');
+    h+=`<div class="msg">${isChief?'あなたが横暴編集長です。採用するタイトルを選んでください':esc(nm(S.chief))+' 編集長が選んでいます'}${isChief?'<br><small>破線の案は自分のタイトルなので選べません</small>':''}</div>`;
+    h+=`<div class="shelf">`+S.subs.map(s=>isChief&&s.id===S.me?tsp(s.t,s.b,'あなたの案（選べません）','dash'):tsp(s.t,s.b,nm(s.id),'',isChief?`act('choose',{winner:'${s.id}'})`:null)).join('')+`</div>`;
 
   }else if(ph==='result'){
     const w=S.subs.find(s=>s.id===S.winner);
-    h+=`<div class="msg">${esc(nm(S.chief))} 編集長の決定</div>`+cover('採用：'+nm(S.winner),w?w.text:'','win');
-    h+=`<h2>ほかの案</h2>`+S.subs.filter(s=>s.id!==S.winner).map(s=>cover(nm(s.id),s.text)).join('');
+    h+=`<div class="msg">${esc(nm(S.chief))} 編集長の決定</div><div class="shelf">`+(w?tsp(w.t,w.b,'採用：'+nm(w.id),'win'):'')+S.subs.filter(s=>s.id!==S.winner).map(s=>tsp(s.t,s.b,nm(s.id))).join('')+`</div>`;
     h+=isChief?`<button class="red wide" onclick="act('next')">${S.round>=S.rounds?'最終投票へ':'次の号へ'}</button>`:`<p>編集長が${S.round>=S.rounds?'最終投票':'次の号'}に進めます</p>`;
 
   }else if(ph==='vote'){
     h+=`<div class="msg">${S.myVote===null?'各号で採用されたタイトルです。一番いいと思うものに投票してください（自分の作品も選べます）':'投票しました。全員の投票を待っています'}</div>`;
-    h+=S.hist.map((x,i)=>`<button class="cover title ${S.myVote===i?'win':''}" ${S.myVote===null?`onclick="act('vote',{idx:${i}})"`:'disabled'}><small>第${x.r}号・${esc(nm(x.id))}</small>${esc(x.text)}</button>`).join('');
+    h+=`<div class="shelf">`+S.hist.map((x,i)=>tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}`,S.myVote===i?'win':'',S.myVote===null?`act('vote',{idx:${i}})`:null)).join('')+`</div>`;
 
   }else if(ph==='final'){
-    const mx=Math.max(...S.votes);
-    const idx=S.hist.map((_,i)=>i).sort((a,b)=>S.votes[b]-S.votes[a]||a-b);
+    const mx=Math.max(...S.votes),idx=S.hist.map((_,i)=>i).sort((a,b)=>S.votes[b]-S.votes[a]||a-b);
     h+=`<div class="msg">出版決定${S.votes.filter(v=>v===mx).length>1?'（同率1位は全て出版）':''}</div>`;
-    h+=idx.map(i=>{const x=S.hist[i];return cover(`第${x.r}号・${nm(x.id)}・${S.votes[i]}票`,x.text,S.votes[i]===mx?'win':'')}).join('');
+    h+=`<div class="shelf">`+idx.map(i=>{const x=S.hist[i];return tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}・${S.votes[i]}票`,S.votes[i]===mx?'win':'')}).join('')+`</div>`;
     h+=host?`<button class="red wide" onclick="act('again')">もう一度遊ぶ</button>`:`<p>ホストが「もう一度遊ぶ」を選べます</p>`;
   }
   if(err)h+=`<div class="msg">${esc(err)}</div>`;
