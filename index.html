@@ -25,7 +25,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--red);outline-of
 .msg{padding:10px;border:2px dashed var(--red);margin:10px 0}
 .msg small{opacity:.8}
 .code{font-size:40px;letter-spacing:.2em;font-weight:900}
-.step{display:flex;align-items:center;justify-content:center;gap:16px;font-size:24px;font-weight:700;margin:8px 0 16px}
+.nums{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 16px}.nums button{padding:14px 0}
 img{display:block;margin:8px auto;background:#fff;padding:6px}
 h2{font-size:18px;margin:16px 0 4px}
 
@@ -75,7 +75,7 @@ h2{font-size:18px;margin:16px 0 4px}
 <script src="config.js"></script>
 <script>
 const ROOM=new URLSearchParams(location.search).get('room')||'';
-let S=null,me=null,code=null,base=location.origin+location.pathname,sel={f:null,h:null},err='';
+let S=null,me=null,code=null,base=location.origin+location.pathname,sel={t:null,b:null},err='';
 const $=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const call=(a,p)=>{
@@ -90,7 +90,7 @@ async function act(a,p){
   try{const r=await call(a,Object.assign({code,id:me},p||{}));
     if(r.err){err=r.err;render();return}
     if(r.id&&r.code){code=r.code;me=r.id;try{sessionStorage.setItem('obh',JSON.stringify({code,id:me}))}catch(e){}poll();return}
-    if(a==='take'||a==='submit')sel={f:null,h:null};
+    if(a==='submit')sel={t:null,b:null};
     S=r;render();
   }catch(e){err='通信に失敗しました。もう一度お試しください';render()}
 }
@@ -99,7 +99,7 @@ async function poll(){
   try{const r=await call('get',{code,id:me,v:S?S.v:null});
     if(r.same)return;
     if(r.err){err=r.err;code=null;S=null;try{sessionStorage.removeItem('obh')}catch(e){}render();return}
-    if(!S||r.v!==S.v){if(S&&(r.phase!==S.phase||r.round!==S.round))sel={f:null,h:null};S=r;render()}}catch(e){}
+    if(!S||r.v!==S.v){if(S&&(r.phase!==S.phase||r.round!==S.round))sel={t:null,b:null};S=r;render()}}catch(e){}
 }
 setInterval(poll,3000);poll();
 addEventListener('resize',()=>{if(S)render()});
@@ -127,38 +127,28 @@ function render(){
     <button class="red wide" onclick="start()">${ROOM?'参加する':'部屋を作る／参加する'}</button>
     ${err?`<div class="msg">${esc(err)}</div>`:''}`;return;
   }
-  const P=S.players,ph=S.phase,nm=id=>(P.find(x=>x.id===id)||{}).name||'',host=S.host===S.me,isChief=S.chief===S.me;
+  const P=S.players,ph=S.phase,nm=id=>(P.find(x=>x.id===id)||{}).name||'',host=S.host===S.me;
   const title=ph==='lobby'?'準備中':ph==='vote'?'最終投票':ph==='final'?'結果発表':`第${S.round}号／全${S.rounds}号`;
   let h=`<div class="bar"><span>部屋 ${S.code}</span><span>${title}</span></div>`;
   h+=`<div class="score">`+P.map(x=>{
-    const on=(ph==='take'||ph==='present')?S.turn===x.id:(ph==='write'||ph==='vote')?x.done:false;
-    const ch=x.id===S.chief&&!['lobby','vote','final'].includes(ph);
-    return `<span class="${on?'ok':''}"><b>${esc(x.name)}</b>${ch?'<i>編集長</i>':''}</span>`}).join('')+`</div>`;
+    const on=ph==='present'?S.turn===x.id:(ph==='write'||ph==='rvote'||ph==='vote')?x.done:false;
+    return `<span class="${on?'ok':''}"><b>${esc(x.name)}</b></span>`}).join('')+`</div>`;
 
   if(ph==='lobby'){
     h+=`<p>参加者が集まったら開始します（${P.length}人／2〜8人）</p><div class="code">${S.code}</div>`;
     h+=`<img alt="参加用QRコード" width="200" height="200" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(base+'?room='+S.code)}">`;
-    if(host)h+=`<h2>会議の回数</h2><div class="step"><button class="ghost" ${S.rounds<=1?'disabled':''} onclick="act('setrounds',{n:${S.rounds-1}})">−</button><span>全${S.rounds}回</span><button class="ghost" ${S.rounds>=10?'disabled':''} onclick="act('setrounds',{n:${S.rounds+1}})">＋</button></div><button class="red wide" onclick="act('start')">ゲーム開始</button>`;
+    if(host)h+=`<h2>会議の回数</h2><div class="nums">`+[1,2,3,4,5,6,7,8].map(n=>`<button class="${n===S.rounds?'red':'ghost'}" onclick="act('setrounds',{n:${n}})">${n}</button>`).join('')+`</div><button class="red wide" onclick="act('start')">ゲーム開始</button>`;
     else h+=`<p>会議は全${S.rounds}回です。ホストが開始するのを待っています</p>`;
-
-  }else if(ph==='take'){
-    const my=S.turn===S.me,lab=['上の札','下の札'];
-    h+=`<div class="msg">${my?'あなたの番です。場から札を1枚取ってください':esc(nm(S.turn))+' さんが札を選んでいます'}<br><small>取る順：${S.order.map(i=>esc(nm(i))).join(' → ')}</small></div>`;
-    h+=`<h2>場の札</h2>`+sides(S.field.map((c,i)=>({c,on:sel.f===i,click:my?`pick('f',${i})`:null})),lab);
-    if(my)h+=`<button class="red wide" ${sel.f===null?'disabled':''} onclick="act('take',{pos:sel.f})">この札を取る</button>`;
-    if(S.taken)h+=`<h2>あなたが取った札（必ず使います）</h2>`+sides([{c:S.taken,on:true}],lab);
-    h+=`<h2>あなたの手札</h2>`+sides(S.hand.map(c=>({c})),lab);
 
   }else if(ph==='write'){
     if(S.mine){
       h+=`<div class="msg">提出しました。全員の提出を待っています</div>`+bk(S.mine.t,S.mine.b,Math.min(200,innerWidth-48),nm(S.me));
     }else{
-      const tk=S.taken;
-      const items=[{c:tk,on:true}].concat(S.hand.map((c,i)=>({c,i})).filter(x=>x.c.k!==tk.k).map(x=>({c:x.c,on:sel.h===x.i,click:`pick('h',${x.i})`})));
-      h+=sides(items,tk.k==='T'?['取った札（必ず使う）','手札から1枚選ぶ']:['手札から1枚選ぶ','取った札（必ず使う）']);
-      const ok=sel.h!==null,hc=ok?S.hand[sel.h]:null;
-      h+=ok?`<div class="shelf" style="justify-content:center">`+tsp(tk.k==='T'?tk.s:hc.s,tk.k==='T'?hc.s:tk.s,'','win')+`</div>`:`<div class="msg">手札から1枚選んでください</div>`;
-      h+=`<button class="red wide" ${ok?'':'disabled'} onclick="act('submit',{h:sel.h})">このタイトルで提出</button>`;
+      h+=`<div class="msg">手札から、上の札と下の札を1枚ずつ選んでタイトルを作ってください</div>`;
+      h+=sides(S.hand.map((c,i)=>({c,on:c.k==='T'?sel.t===i:sel.b===i,click:`pick('${c.k==='T'?'t':'b'}',${i})`})),['上の札','下の札']);
+      const ok=sel.t!==null&&sel.b!==null;
+      if(ok)h+=`<div class="shelf" style="justify-content:center">`+tsp(S.hand[sel.t].s,S.hand[sel.b].s,'','win')+`</div>`;
+      h+=`<button class="red wide" ${ok?'':'disabled'} onclick="act('submit',{t:sel.t,b:sel.b})">このタイトルで提出</button>`;
     }
 
   }else if(ph==='present'){
@@ -172,17 +162,19 @@ function render(){
       if(S.mine&&!S.presented.includes(S.me))h+=`<h2>あなたのタイトル（まだ公開されていません）</h2>`+bk(S.mine.t,S.mine.b,Math.min(200,innerWidth-48),nm(S.me));
     }
 
-  }else if(ph==='judge'){
-    h+=`<div class="msg">${isChief?'あなたが横暴編集長です。採用するタイトルを選んでください':esc(nm(S.chief))+' 編集長が選んでいます'}${isChief?'<br><small>破線の案は自分のタイトルなので選べません</small>':''}</div>`;
-    h+=`<div class="shelf">`+S.subs.map(s=>isChief&&s.id===S.me?tsp(s.t,s.b,'あなたの案（選べません）','dash'):tsp(s.t,s.b,nm(s.id),'',isChief?`act('choose',{winner:'${s.id}'})`:null)).join('')+`</div>`;
+  }else if(ph==='rvote'){
+    const done=S.myRVote!==null;
+    h+=`<div class="msg">${done?'投票しました。全員の投票を待っています':'一番いいと思う作品に投票してください（自分の作品には投票できません）'}</div>`;
+    h+=`<div class="shelf">`+S.subs.map(s=>s.id===S.me?tsp(s.t,s.b,'あなたの作品（選べません）','dash'):tsp(s.t,s.b,nm(s.id),S.myRVote===s.id?'win':'',done?null:`act('rvote',{target:'${s.id}'})`)).join('')+`</div>`;
 
-  }else if(ph==='result'){
-    const w=S.subs.find(s=>s.id===S.winner);
-    h+=`<div class="msg">${esc(nm(S.chief))} 編集長の決定</div><div class="shelf">`+(w?tsp(w.t,w.b,'採用：'+nm(w.id),'win'):'')+S.subs.filter(s=>s.id!==S.winner).map(s=>tsp(s.t,s.b,nm(s.id))).join('')+`</div>`;
-    h+=isChief?`<button class="red wide" onclick="act('next')">${S.round>=S.rounds?'最終投票へ':'次の号へ'}</button>`:`<p>編集長が${S.round>=S.rounds?'最終投票':'次の号'}に進めます</p>`;
+  }else if(ph==='rresult'){
+    const R=S.rres,last=S.round>=S.rounds;
+    h+=`<div class="msg">${R.counts?'今回残す作品が決まりました（同数の場合は、それぞれ残します）':'今回の作品は、すべて最終投票の候補になります'}</div>`;
+    h+=`<div class="shelf">`+S.subs.map(s=>tsp(s.t,s.b,nm(s.id)+(R.counts?'・'+R.counts[s.id]+'票':''),R.kept.includes(s.id)?'win':'')).join('')+`</div>`;
+    h+=host?`<button class="red wide" onclick="act('next')">${last?'最終投票へ':'次の号へ'}</button>`:`<p>ホストが${last?'最終投票':'次の号'}に進めます</p>`;
 
   }else if(ph==='vote'){
-    h+=`<div class="msg">${S.myVote===null?'各号で採用されたタイトルです。一番いいと思うものに投票してください（自分の作品も選べます）':'投票しました。全員の投票を待っています'}</div>`;
+    h+=`<div class="msg">${S.myVote===null?'残ったタイトルです。一番いいと思うものに投票してください（自分の作品も選べます）':'投票しました。全員の投票を待っています'}</div>`;
     h+=`<div class="shelf">`+S.hist.map((x,i)=>tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}`,S.myVote===i?'win':'',S.myVote===null?`act('vote',{idx:${i}})`:null)).join('')+`</div>`;
 
   }else if(ph==='final'){
