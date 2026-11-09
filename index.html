@@ -44,7 +44,8 @@ h2{font-size:18px;margin:16px 0 4px}
 .side.bot{--c:var(--blue);background:color-mix(in srgb,var(--blue) 14%,transparent)}
 .side h3{margin:0 0 8px;font-size:14px;color:var(--c)}
 .rack{display:flex;flex-direction:row-reverse;flex-wrap:wrap;gap:8px;padding-top:8px}
-.pair{display:flex;flex-direction:row-reverse;gap:10px;justify-content:center;margin:10px 0}
+.cv{display:flex;flex-direction:row-reverse;justify-content:center;align-items:flex-start;gap:18px;padding:34px 20px;margin:12px auto;max-width:340px;background:var(--sheet);color:var(--ink);border:2px solid var(--ink);border-left:12px solid var(--ink);border-radius:3px 8px 8px 3px;box-shadow:inset 0 0 0 5px var(--sheet),inset 0 0 0 6px var(--ink),4px 6px 0 rgba(0,0,0,.2)}
+.cv .ln{writing-mode:vertical-rl;text-orientation:mixed;text-combine-upright:digits 3;font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:var(--fs,26px);line-height:1.35;text-align:center}
 
 /* 完成したタイトル（縦書き1行） */
 .shelf{display:flex;flex-direction:row-reverse;flex-wrap:wrap;gap:10px;margin:10px 0}
@@ -58,8 +59,7 @@ h2{font-size:18px;margin:16px 0 4px}
 
 /* 発表画面（画面いっぱい） */
 .stage{position:fixed;inset:0;z-index:20;background:var(--paper);display:flex;flex-direction:column;height:100vh;height:100dvh}
-.stage .pair{flex:1;min-height:0;padding:12px;margin:0}
-.stage .sp{flex:1;display:flex;align-items:center;justify-content:center;font-size:var(--fs)}
+.stage .cv{flex:1;min-height:0;margin:12px;max-width:none;align-items:center}
 .stagebar{padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px))}
 .stagebar button{margin:0}
 </style></head><body><div id="app"></div>
@@ -105,7 +105,7 @@ const L=s=>String(s).replace(/\d{1,3}/g,'0').length;
 const spine=(c,o)=>{const t=c.k==='T';return `<button class="sp ${t?'top':'bot'} ${o.on?'sel':''}" ${o.click?`onclick="${o.click}"`:'disabled'}><i class="mk">${t?'上':'下'}</i><span>${esc(c.s)}</span></button>`};
 const sides=(items,lab)=>{const mk=k=>items.filter(x=>x.c.k===k).map(x=>spine(x.c,x)).join('');
   return `<div class="two"><div class="side top"><h3>${lab[0]}</h3><div class="rack">${mk('T')}</div></div><div class="side bot"><h3>${lab[1]}</h3><div class="rack">${mk('B')}</div></div></div>`};
-const pair=(t,b,fs)=>`<div class="pair" style="--fs:${fs}px"><div class="sp top"><i class="mk">上</i><span>${esc(t)}</span></div><div class="sp bot"><i class="mk">下</i><span>${esc(b)}</span></div></div>`;
+const pair=(t,b,fs)=>`<div class="cv" style="--fs:${fs}px"><div class="ln">${esc(t)}</div><div class="ln">${esc(b)}</div></div>`;
 const tsp=(t,b,by,cls,click)=>{const tag=click===undefined?'div':'button';const at=click===undefined?'':click===null?'disabled':`onclick="${click}"`;
   return `<${tag} class="tsp ${cls||''}" ${at}><span class="tt">${esc(t)}<i class="gp"></i>${esc(b)}</span><span class="by">${esc(by||'')}</span></${tag}>`};
 
@@ -154,7 +154,7 @@ function render(){
   }else if(ph==='present'){
     const my=S.turn===S.me;
     if(S.cur){
-      const fs=Math.max(18,Math.floor(Math.min((innerHeight-190)/(Math.max(L(S.cur.t),L(S.cur.b))*1.12),(innerWidth-34)/2/1.5)));
+      const fs=Math.max(18,Math.floor(Math.min((innerHeight-240)/(Math.max(L(S.cur.t),L(S.cur.b))*1.15),(innerWidth-110)/2/1.4)));
       h+=`<div class="stage">${pair(S.cur.t,S.cur.b,fs)}<div class="stagebar"><button class="red wide" onclick="act('endshow')">発表終了</button></div></div>`;
     }else{
       h+=`<div class="msg">${S.showing?esc(nm(S.turn))+' さんが発表中です。発表者の画面を見てください':my?'あなたの番です。画面を他の人に見せながら発表してください':esc(nm(S.turn))+' さんの発表を待っています'}</div>`;
