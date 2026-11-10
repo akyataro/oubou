@@ -106,19 +106,34 @@ h2{font-size:18px;margin:16px 0 4px}
   min-height: 100vh;
   min-height: 100dvh;
   margin: -12px;
-  background: url('title01.jpg') center/cover no-repeat;
+  background-color: #161b23; /* 全体のベースをダークカラーに */
+  display: flex;
+  justify-content: center;
+}
+
+.hero-inner {
+  position: relative;
+  width: 100%;
+  max-width: 640px; /* PCでは幅を固定してスマホ風の表示領域をキープ */
+  min-height: 100vh;
+  min-height: 100dvh;
+  /* coverではなく 100% auto にすることで横幅ぴったりに合わせ、見切れを防止 */
+  background: url('title01.jpg') top center / 100% auto no-repeat;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: 24px;
+  align-items: center;
+  justify-content: flex-start;
 }
-.hero-container::before {
+
+.hero-inner::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(22,27,35,0.9) 0%, rgba(22,27,35,0.4) 40%, rgba(22,27,35,0) 100%);
+  /* 画像の下部が自然に暗闇へフェードアウトするようにグラデーションをかける */
+  background: linear-gradient(to bottom, rgba(22,27,35,0) 0%, rgba(22,27,35,0) 35%, rgba(22,27,35,0.9) 65%, rgba(22,27,35,1) 100%);
   pointer-events: none;
 }
+
 .login-box {
   position: relative;
   z-index: 10;
@@ -127,12 +142,14 @@ h2{font-size:18px;margin:16px 0 4px}
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
-  padding: 20px;
-  width: 100%;
+  padding: 24px 20px;
+  width: 90%;
   max-width: 400px;
-  margin: 0 auto;
+  /* 画像の幅（100%）を基準に上余白を取り、タイトルの真下にボックスが来るように配置 */
+  margin-top: 50%;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
+
 .login-box input {
   background: rgba(255, 255, 255, 0.9);
   border: none;
@@ -291,11 +308,13 @@ function render(){
   if(!S){
     $.innerHTML=`
     <div class="hero-container">
-      <div class="login-box">
-        <input id="name" placeholder="名前（10文字まで）" maxlength="10" autocomplete="off">
-        <input id="code" placeholder="部屋コード（参加時）" inputmode="numeric" value="${esc(ROOM)}">
-        <button class="red wide" onclick="start()">${ROOM?'参加する':'部屋を作る／参加する'}</button>
-        ${err?`<div class="msg">${esc(err)}</div>`:''}
+      <div class="hero-inner">
+        <div class="login-box">
+          <input id="name" placeholder="名前（10文字まで）" maxlength="10" autocomplete="off">
+          <input id="code" placeholder="部屋コード（参加時）" inputmode="numeric" value="${esc(ROOM)}">
+          <button class="red wide" onclick="start()">${ROOM?'参加する':'部屋を作る／参加する'}</button>
+          ${err?`<div class="msg">${esc(err)}</div>`:''}
+        </div>
       </div>
     </div>`;
     document.body.style.padding = '0';
