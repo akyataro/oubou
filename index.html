@@ -98,14 +98,73 @@ h2{font-size:18px;margin:16px 0 4px}
 .stagebody{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px}.stagebody .bk{margin:0}
 .stagebar{padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px))}
 .stagebar button{margin:0}
-.hero-img {
+
+/* フルスクリーンヒーロー背景とログインフォームのスタイル */
+.hero-container {
+  position: relative;
   width: 100%;
-  height: auto;
-  margin: 0 0 16px;
-  padding: 0;
-  background: transparent;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: -12px;
+  background: url('title01.jpg') center/cover no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px;
+}
+.hero-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(22,27,35,0.9) 0%, rgba(22,27,35,0.4) 40%, rgba(22,27,35,0) 100%);
+  pointer-events: none;
+}
+.login-box {
+  position: relative;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+.login-box input {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  color: #1b2430;
+  font-weight: 700;
+  border-radius: 8px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+.login-box input::placeholder {
+  color: #888;
+  font-weight: 400;
+}
+.login-box button.red {
+  background: linear-gradient(135deg, #d6303b, #b31d27);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(214, 48, 59, 0.4);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.login-box button.red:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 6px rgba(214, 48, 59, 0.4);
+}
+.login-box .msg {
+  background: rgba(214, 48, 59, 0.9);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 12px;
 }
 </style></head><body><div id="app"></div><div id="chat"></div><div id="modal"></div><div id="toastbox"></div>
 <script src="config.js"></script>
@@ -230,12 +289,26 @@ const tsp=(t,b,by,cls,click)=>{const tag=click===undefined?'div':'button';const 
 
 function render(){
   if(!S){
-    $.innerHTML=`<img src="title01.jpg" alt="横暴編集長" class="hero-img">
-    <input id="name" placeholder="名前（10文字まで）" maxlength="10" autocomplete="off">
-    <input id="code" placeholder="部屋コード（参加するとき）" inputmode="numeric" value="${esc(ROOM)}">
-    <button class="red wide" onclick="start()">${ROOM?'参加する':'部屋を作る／参加する'}</button>
-    ${err?`<div class="msg">${esc(err)}</div>`:''}`;renderChat();return;
+    $.innerHTML=`
+    <div class="hero-container">
+      <div class="login-box">
+        <input id="name" placeholder="名前（10文字まで）" maxlength="10" autocomplete="off">
+        <input id="code" placeholder="部屋コード（参加時）" inputmode="numeric" value="${esc(ROOM)}">
+        <button class="red wide" onclick="start()">${ROOM?'参加する':'部屋を作る／参加する'}</button>
+        ${err?`<div class="msg">${esc(err)}</div>`:''}
+      </div>
+    </div>`;
+    document.body.style.padding = '0';
+    $.style.padding = '0';
+    $.style.maxWidth = '100%';
+    renderChat();return;
   }
+  
+  // ゲーム中になったら元に戻す
+  document.body.style.padding = '';
+  $.style.padding = '12px';
+  $.style.maxWidth = '640px';
+  
   const P=S.players,ph=S.phase,nm=id=>(P.find(x=>x.id===id)||{}).name||'',host=S.host===S.me;
   const title=ph==='lobby'?'準備中':ph==='vote'?'最終投票':ph==='final'?'結果発表':`第${S.round}号／全${S.rounds}号`;
   let h=`<div class="bar"><span>部屋 ${S.code}</span><span>${title}</span></div>`;
