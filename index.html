@@ -96,8 +96,8 @@ h2{font-size:18px;margin:16px 0 4px}
 </style></head><body><div id="app"></div><div id="chat"></div><div id="modal"></div><div id="toastbox"></div>
 <script src="config.js"></script>
 <script>
-const VER='2026-11-10a';
-const ROOM=new URLSearchParams(location.search).get('room')||'';
+const VER='2026-11-10b';
+let ROOM=new URLSearchParams(location.search).get('room')||'';
 let S=null,me=null,code=null,base=location.origin+location.pathname,sel={t:null,b:null},err='';
 const $=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -112,16 +112,24 @@ async function act(a,p){
   err='';
   try{const r=await call(a,Object.assign({code,id:me},p||{}));
     if(r.err){err=r.err;if(S)toast(r.err);render();return}
+    if(r.closed){leaveRoom('');return}
     if(r.id&&r.code){code=r.code;me=r.id;try{localStorage.setItem('obh',JSON.stringify({code,id:me}))}catch(e){}poll();return}
     if(a==='submit')sel={t:null,b:null};
     S=r;render();
   }catch(e){err='通信に失敗しました。もう一度お試しください';if(S)toast(err);render()}
 }
+function leaveRoom(msg){  // 部屋から出て、最初の画面に戻る
+  code=null;me=null;S=null;sel={t:null,b:null};err=msg||'';ROOM='';
+  try{localStorage.removeItem('obh')}catch(e){}
+  try{history.replaceState(null,'',location.pathname)}catch(e){}
+  document.getElementById('modal').innerHTML='';
+  render();
+}
 async function poll(){
   if(!code)return;
   try{const r=await call('get',{code,id:me,v:S?S.v:null});
     if(r.same)return;
-    if(r.err){err=r.err;code=null;S=null;try{localStorage.removeItem('obh')}catch(e){}render();return}
+    if(r.err){leaveRoom(S&&r.err==='部屋が見つかりません'?'部屋が終了しました。新しい部屋に参加するか、作成してください':r.err);return}
     if(!S||r.v!==S.v){if(S&&(r.phase!==S.phase||r.round!==S.round))sel={t:null,b:null};S=r;render()}}catch(e){}
 }
 (async function loop(){try{await poll()}catch(e){}setTimeout(loop,S&&S.remote?2000:3000)})();
@@ -144,7 +152,7 @@ function modalOk(){const f=modalFn;modalNo();if(f)f()}
 let toastT=0;
 function toast(msg){const el=document.getElementById('toastbox');el.innerHTML=`<div id="toast">${esc(msg)}</div>`;clearTimeout(toastT);toastT=setTimeout(()=>{el.innerHTML=''},3500)}
 
-function resetGame(){ask('ゲームを中止して、待機画面に戻します。<br>ここまでの進行は消えます（参加者はそのままです）。','やり直す',()=>act('reset'))}
+function resetGame(){ask('この部屋を終了します。<br>参加者・チャット・ここまでの進行がすべて消え、全員が最初の画面に戻ります。','終了する',()=>act('reset'))}
 function inviteUrl(){return base+'?room='+S.code}
 function share(){
   const u=inviteUrl(),t='横暴編集長（タイトル大喜利）に参加してね。部屋コード：'+S.code+'\n';
@@ -279,7 +287,7 @@ function render(){
     h+=`<h2>投票結果</h2><div class="shelf">`+idx.map(i=>{const x=S.hist[i];return tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}・${S.votes[i]}票`,S.votes[i]===mx?'win':'')}).join('')+`</div>`;
     h+=host?`<button class="red wide" onclick="act('again')">もう一度遊ぶ</button>`:`<p>ホストが「もう一度遊ぶ」を選べます</p>`;
   }
-  if(host&&ph!=='lobby'&&ph!=='final'&&!S.cur)h+=`<button class="ghost wide" style="margin-top:28px;font-size:16px" onclick="resetGame()">ゲームを中止して最初からやり直す</button>`;
+  if(host&&!S.cur)h+=`<button class="ghost wide" style="margin-top:28px;font-size:16px" onclick="resetGame()">部屋を終了して最初からやり直す</button>`;
   $.innerHTML=h;
   renderChat();
 }
