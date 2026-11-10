@@ -101,7 +101,7 @@ h2{font-size:18px;margin:16px 0 4px}
 </style></head><body><div id="app"></div><div id="chat"></div><div id="modal"></div><div id="toastbox"></div>
 <script src="config.js"></script>
 <script>
-const VER='2026-11-10b';
+const VER='2026-11-10c';
 let ROOM=new URLSearchParams(location.search).get('room')||'';
 let S=null,me=null,code=null,base=location.origin+location.pathname,sel={t:null,b:null},err='';
 const $=document.getElementById('app');
@@ -292,7 +292,7 @@ function render(){
     h+=`<h2>投票結果</h2><div class="shelf">`+idx.map(i=>{const x=S.hist[i];return tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}・${S.votes[i]}票`,S.votes[i]===mx?'win':'')}).join('')+`</div>`;
     h+=host?`<button class="red wide" onclick="act('again')">もう一度遊ぶ</button>`:`<p>ホストが「もう一度遊ぶ」を選べます</p>`;
   }
-  if(host&&!S.cur)h+=`<button class="ghost wide" style="margin-top:28px;font-size:16px" onclick="resetGame()">部屋を終了して最初からやり直す</button>`;
+  if(!S.cur)h+=`<button class="ghost wide" style="margin-top:28px;font-size:16px" onclick="resetGame()">部屋を終了して最初からやり直す</button>`;
   $.innerHTML=h;
   renderChat();
 }
