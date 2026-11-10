@@ -28,16 +28,25 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--red);outline-of
 .row2{display:flex;gap:8px;margin:8px 0}.row2 button{flex:1;font-size:16px;padding:12px 6px}
 .hint{font-size:14px;opacity:.8;margin:4px 0 12px}
 .bar{align-items:center}
-.cb{font-size:14px;padding:6px 12px}.cb b{margin-left:6px;background:var(--red);color:#fff;border-radius:99px;padding:0 7px}
 .who{flex:1;text-align:center;font-weight:700;align-self:center}
 .stagebar .row2{margin:0}
-.cpanel{position:fixed;left:0;right:0;bottom:0;z-index:40;max-height:62vh;max-height:62dvh;min-height:40vh;display:flex;flex-direction:column;background:var(--paper);border-top:3px solid var(--ink);box-shadow:0 -6px 16px rgba(0,0,0,.25)}
-.chd{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;font-weight:700;border-bottom:1px solid var(--line)}
-.chd button{font-size:14px;padding:6px 12px}
-#clog{flex:1;overflow-y:auto;padding:8px 12px}
-.cm{padding:3px 0;word-break:break-all;font-size:16px}.cm b{color:var(--red);margin-right:6px}
-.cin{display:flex;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px))}
-.cin input{margin:0;font-size:16px;padding:10px}.cin button{font-size:16px;padding:10px 16px}
+.row2.rev{flex-direction:row-reverse}
+#chat{position:fixed;top:0;left:0;z-index:50;width:min(100vw,520px);padding:6px 8px;pointer-events:none}
+#chat>*{pointer-events:auto}
+.ctop{display:flex;gap:6px;align-items:center}
+.ctop input{margin:0;flex:1;min-width:0;font-size:16px;padding:7px 10px;background:var(--paper)}
+.ctop button{font-size:14px;padding:7px 10px;white-space:nowrap}
+.ctop b{margin-left:4px;background:var(--red);color:#fff;border-radius:99px;padding:0 6px}
+#clog{margin-top:4px;max-height:30vh;max-height:30dvh;overflow-y:auto;padding:6px 8px;border-radius:6px;background:color-mix(in srgb,var(--paper) 88%,transparent);font-size:15px;line-height:1.45}
+.cm{word-break:break-all}.cm b{color:var(--red);margin-right:6px}
+.online #app{padding-top:58px}
+.online .stage{top:50px;height:calc(100vh - 50px);height:calc(100dvh - 50px)}
+.mback{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+.mbox{background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:8px;padding:18px;width:100%;max-width:420px}
+.mbox p{margin:0 0 14px;line-height:1.7}
+.mbox input{font-size:16px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:80;max-width:90vw;padding:10px 16px;border-radius:8px;background:var(--ink);color:var(--paper);font-weight:700;font-size:16px}
+.verbanner{background:var(--red);color:#fff;padding:8px 10px;border-radius:4px;margin-bottom:10px;font-size:15px}
 .nums{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 16px}.nums button{padding:14px 0}
 img{display:block;margin:8px auto;background:#fff;padding:6px}
 h2{font-size:18px;margin:16px 0 4px}
@@ -84,9 +93,10 @@ h2{font-size:18px;margin:16px 0 4px}
 .stagebody{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px}.stagebody .bk{margin:0}
 .stagebar{padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px))}
 .stagebar button{margin:0}
-</style></head><body><div id="app"></div><div id="chat"></div>
+</style></head><body><div id="app"></div><div id="chat"></div><div id="modal"></div><div id="toastbox"></div>
 <script src="config.js"></script>
 <script>
+const VER='2026-11-10a';
 const ROOM=new URLSearchParams(location.search).get('room')||'';
 let S=null,me=null,code=null,base=location.origin+location.pathname,sel={t:null,b:null},err='';
 const $=document.getElementById('app');
@@ -101,11 +111,11 @@ try{const k=localStorage.getItem('obh');if(k){const o=JSON.parse(k);if(!ROOM||RO
 async function act(a,p){
   err='';
   try{const r=await call(a,Object.assign({code,id:me},p||{}));
-    if(r.err){err=r.err;render();return}
+    if(r.err){err=r.err;if(S)toast(r.err);render();return}
     if(r.id&&r.code){code=r.code;me=r.id;try{localStorage.setItem('obh',JSON.stringify({code,id:me}))}catch(e){}poll();return}
     if(a==='submit')sel={t:null,b:null};
     S=r;render();
-  }catch(e){err='通信に失敗しました。もう一度お試しください';render()}
+  }catch(e){err='通信に失敗しました。もう一度お試しください';if(S)toast(err);render()}
 }
 async function poll(){
   if(!code)return;
@@ -114,7 +124,7 @@ async function poll(){
     if(r.err){err=r.err;code=null;S=null;try{localStorage.removeItem('obh')}catch(e){}render();return}
     if(!S||r.v!==S.v){if(S&&(r.phase!==S.phase||r.round!==S.round))sel={t:null,b:null};S=r;render()}}catch(e){}
 }
-setInterval(poll,3000);poll();
+(async function loop(){try{await poll()}catch(e){}setTimeout(loop,S&&S.remote?2000:3000)})();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()});
 addEventListener('resize',()=>{if(S)render()});
 
@@ -123,10 +133,18 @@ function start(){
   c?act('join',{name:n,code:c}):act('create',{name:n});
 }
 function pick(k,i){sel[k]=i;render()}
-function resetGame(){
-  if(!confirm('ゲームを中止して、待機画面に戻します。ここまでの進行は消えます（参加者はそのままです）。よろしいですか？'))return;
-  act('reset');
+// ゲーム内の確認ダイアログ（ブラウザの confirm はLINEなどのアプリ内ブラウザで動かないことがあるため）
+let modalFn=null;
+function ask(msg,okLabel,fn,noLabel){
+  modalFn=fn;
+  document.getElementById('modal').innerHTML=`<div class="mback"><div class="mbox"><p>${msg}</p><div class="row2">${noLabel===null?'':`<button class="ghost" onclick="modalNo()">${noLabel||'やめる'}</button>`}<button class="red" onclick="modalOk()">${okLabel}</button></div></div></div>`;
 }
+function modalNo(){modalFn=null;document.getElementById('modal').innerHTML=''}
+function modalOk(){const f=modalFn;modalNo();if(f)f()}
+let toastT=0;
+function toast(msg){const el=document.getElementById('toastbox');el.innerHTML=`<div id="toast">${esc(msg)}</div>`;clearTimeout(toastT);toastT=setTimeout(()=>{el.innerHTML=''},3500)}
+
+function resetGame(){ask('ゲームを中止して、待機画面に戻します。<br>ここまでの進行は消えます（参加者はそのままです）。','やり直す',()=>act('reset'))}
 function inviteUrl(){return base+'?room='+S.code}
 function share(){
   const u=inviteUrl(),t='横暴編集長（タイトル大喜利）に参加してね。部屋コード：'+S.code+'\n';
@@ -135,34 +153,48 @@ function share(){
 }
 function copyUrl(){
   const u=inviteUrl();
-  (navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>alert('リンクをコピーしました')).catch(()=>prompt('このリンクをコピーしてください',u));
+  const fb=()=>ask('下のリンクを長押ししてコピーしてください。<br><input readonly value="'+esc(u)+'" onclick="this.select()">','閉じる',null,null);
+  try{(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>toast('リンクをコピーしました')).catch(fb)}catch(e){fb()}
 }
-let chatOpen=false,seenCn=0,justOpened=false;
-const unreadN=()=>chatOpen||!S?0:Math.max(0,(S.cn||0)-seenCn);
-function openChat(){chatOpen=true;justOpened=true;renderChat();const i=document.getElementById('cmsg');if(i)i.focus()}
-function closeChat(){chatOpen=false;if(S)seenCn=S.cn||0;renderChat();render()}
+function swap(k){
+  ask((k==='T'?'上':'下')+'の札5枚をすべて山札と交換します。<br>1ラウンドに1回しか使えません。','交換する',()=>{if(k==='T')sel.t=null;else sel.b=null;act('swap',{k})});
+}
+function askRVote(id){
+  const s=S.subs.find(x=>x.id===id);if(!s)return;
+  ask('次の作品に投票します。<br><b>'+esc(s.t+s.b)+'</b><br>投票後は変更できません。','投票する',()=>act('rvote',{target:id}));
+}
+function askFinal(i){
+  const x=S.hist[i];if(!x)return;
+  ask('次のタイトルに投票します。<br><b>'+esc(x.t+x.b)+'</b><br>投票後は変更できません。','投票する',()=>act('vote',{idx:i}));
+}
+
+// チャット（オンラインのときだけ。画面の左上に、入力欄と文字だけのログ）
+let logOpen=true,seenCn=0,justSent=false;
+const online=()=>!!(S&&S.remote);
+function toggleLog(){logOpen=!logOpen;if(logOpen&&S)seenCn=S.cn||0;renderChat()}
 async function sendChat(){
   const i=document.getElementById('cmsg');if(!i)return;
   const m=i.value.trim();if(!m)return;
-  i.value='';justOpened=true;
+  i.value='';logOpen=true;justSent=true;
   await act('chat',{m});
   const j=document.getElementById('cmsg');if(j)j.focus();
 }
 function renderChat(){
   const el=document.getElementById('chat');
-  if(!S||!chatOpen){el.innerHTML='';return}
-  if(!document.getElementById('clog')){
-    el.innerHTML=`<div class="cpanel"><div class="chd"><span>チャット</span><button class="ghost" onclick="closeChat()">閉じる</button></div><div id="clog"></div><div class="cin"><input id="cmsg" maxlength="60" placeholder="メッセージ（60文字まで）" autocomplete="off" onkeydown="if(event.key==='Enter')sendChat()"><button class="red" onclick="sendChat()">送信</button></div></div>`;
+  document.body.classList.toggle('online',online());
+  if(!online()){el.innerHTML='';return}
+  if(!document.getElementById('cmsg')){
+    el.innerHTML=`<div class="ctop"><input id="cmsg" maxlength="60" placeholder="チャット（60文字まで）" autocomplete="off" enterkeyhint="send" onkeydown="if(event.key==='Enter'&&!event.isComposing)sendChat()"><button class="red" onclick="sendChat()">送信</button><button class="ghost" id="clogbtn" onclick="toggleLog()"></button></div><div id="clog"></div>`;
   }
-  const log=document.getElementById('clog'),near=log.scrollHeight-log.scrollTop-log.clientHeight<48;
+  const un=logOpen?0:Math.max(0,(S.cn||0)-seenCn);
+  document.getElementById('clogbtn').innerHTML=(logOpen?'ログを隠す':'ログ')+(un?`<b>${un}</b>`:'');
+  const log=document.getElementById('clog');
+  if(!logOpen){log.style.display='none';return}
+  log.style.display='block';
+  const near=log.scrollHeight-log.scrollTop-log.clientHeight<48;
   log.innerHTML=(S.chat||[]).map(x=>`<div class="cm"><b>${esc(x.n)}</b>${esc(x.m)}</div>`).join('')||'<div class="cm" style="opacity:.6">まだメッセージはありません</div>';
-  if(near||justOpened){log.scrollTop=log.scrollHeight;justOpened=false}
+  if(near||justSent){log.scrollTop=log.scrollHeight;justSent=false}
   seenCn=S.cn||0;
-}
-function swap(k){
-  if(!confirm((k==='T'?'上':'下')+'の札5枚をすべて山札と交換します。1ラウンドに1回しか使えません。よろしいですか？'))return;
-  if(k==='T')sel.t=null;else sel.b=null;
-  act('swap',{k});
 }
 
 const L=s=>String(s).replace(/\d{1,3}/g,'0').length;
@@ -184,8 +216,8 @@ function render(){
   }
   const P=S.players,ph=S.phase,nm=id=>(P.find(x=>x.id===id)||{}).name||'',host=S.host===S.me;
   const title=ph==='lobby'?'準備中':ph==='vote'?'最終投票':ph==='final'?'結果発表':`第${S.round}号／全${S.rounds}号`;
-  const un=unreadN();
-  let h=`<div class="bar"><span>部屋 ${S.code}</span><span>${title}</span><button class="ghost cb" onclick="openChat()">チャット${un?`<b>${un}</b>`:''}</button></div>`;
+  let h=`<div class="bar"><span>部屋 ${S.code}</span><span>${title}</span></div>`;
+  if(S.ver!==VER)h+=`<div class="verbanner">画面とサーバーのバージョンが合っていません。ページを再読み込みしてください。直らない場合は、GASの「デプロイを管理」から新バージョンをデプロイし直してください。</div>`;
   h+=`<div class="score">`+P.map(x=>{
     const on=ph==='present'?S.turn===x.id:(ph==='write'||ph==='rvote'||ph==='vote')?x.done:false;
     return `<span class="${on?'ok':''}"><b>${esc(x.name)}</b></span>`}).join('')+`</div>`;
@@ -194,7 +226,7 @@ function render(){
     h+=`<p>参加者が集まったら開始します（${P.length}人／2〜8人）</p><div class="code">${S.code}</div>`;
     h+=`<img alt="参加用QRコード" width="200" height="200" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(base+'?room='+S.code)}">`;
     h+=`<div class="row2"><button class="ghost" onclick="share()">LINEなどで招待</button><button class="ghost" onclick="copyUrl()">リンクをコピー</button></div><p class="hint" style="word-break:break-all">${esc(inviteUrl())}</p>`;
-    h+=host?`<h2>遊び方</h2><div class="row2"><button class="${S.remote?'ghost':'red'}" onclick="act('setmode',{remote:0})">対面</button><button class="${S.remote?'red':'ghost'}" onclick="act('setmode',{remote:1})">リモート</button></div><p class="hint">対面：発表者のスマホ画面を、みんなに直接見せる<br>リモート：発表のタイトルが、全員の画面に表示される</p>`:`<p class="hint">遊び方：${S.remote?'リモート（発表のタイトルが全員の画面に表示されます）':'対面（発表者のスマホ画面を直接見せます）'}</p>`;
+    h+=host?`<h2>遊び方</h2><div class="row2"><button class="${S.remote?'ghost':'red'}" onclick="act('setmode',{remote:0})">対面</button><button class="${S.remote?'red':'ghost'}" onclick="act('setmode',{remote:1})">オンライン</button></div><p class="hint">対面：発表者のスマホ画面を、みんなに直接見せる<br>オンライン：発表のタイトルが全員の画面に表示され、チャットも使えます</p>`:`<p class="hint">遊び方：${S.remote?'オンライン（発表のタイトルが全員の画面に表示され、チャットも使えます）':'対面（発表者のスマホ画面を直接見せます）'}</p>`;
     if(host)h+=`<h2>会議の回数</h2><div class="nums">`+[1,2,3,4,5,6,7,8].map(n=>`<button class="${n===S.rounds?'red':'ghost'}" onclick="act('setrounds',{n:${n}})">${n}</button>`).join('')+`</div><button class="red wide" onclick="act('start')">ゲーム開始</button>`;
     else h+=`<p>会議は全${S.rounds}回です。ホストが開始するのを待っています</p>`;
 
@@ -205,7 +237,7 @@ function render(){
       h+=`<div class="msg">手札から、上の札と下の札を1枚ずつ選んでタイトルを作ってください</div>`;
       h+=sides(S.hand.map((c,i)=>({c,on:c.k==='T'?sel.t===i:sel.b===i,click:`pick('${c.k==='T'?'t':'b'}',${i})`})),['上の札','下の札']);
       const sw=S.swapped;
-      h+=`<div class="row2"><button class="ghost" ${sw?'disabled':''} onclick="swap('T')">上の札をすべて交換</button><button class="ghost" ${sw?'disabled':''} onclick="swap('B')">下の札をすべて交換</button></div>`+(sw?`<p class="hint">${sw==='T'?'上':'下'}の札を交換しました。交換は1ラウンドに1回です</p>`:`<p class="hint">山札と交換できます（1ラウンドに1回、上か下のどちらか）</p>`);
+      h+=`<div class="row2 rev"><button class="ghost" ${sw?'disabled':''} onclick="swap('T')">上の札をすべて交換</button><button class="ghost" ${sw?'disabled':''} onclick="swap('B')">下の札をすべて交換</button></div>`+(sw?`<p class="hint">${sw==='T'?'上':'下'}の札を交換しました。交換は1ラウンドに1回です</p>`:`<p class="hint">山札と交換できます（1ラウンドに1回、上か下のどちらか）</p>`);
       const ok=sel.t!==null&&sel.b!==null;
       if(ok)h+=`<div class="shelf" style="justify-content:center">`+tsp(S.hand[sel.t].s,S.hand[sel.b].s,'','win')+`</div>`;
       h+=`<button class="red wide" ${ok?'':'disabled'} onclick="act('submit',{t:sel.t,b:sel.b})">このタイトルで提出</button>`;
@@ -215,7 +247,7 @@ function render(){
     const my=S.turn===S.me;
     if(S.cur){
       const w=Math.floor(Math.min(innerWidth-32,(innerHeight-130)/1.4));
-      h+=`<div class="stage"><div class="stagebody">${bk(S.cur.t,S.cur.b,w,nm(S.cur.id))}</div><div class="stagebar"><div class="row2"><button class="ghost" onclick="openChat()">チャット${un?`<b>${un}</b>`:''}</button>${S.cur.id===S.me?`<button class="red" onclick="act('endshow')">発表終了</button>`:`<div class="who">${esc(nm(S.cur.id))} さんが発表中</div>`}</div></div></div>`;
+      h+=`<div class="stage"><div class="stagebody">${bk(S.cur.t,S.cur.b,w,nm(S.cur.id))}</div><div class="stagebar"><div class="row2">${S.cur.id===S.me?`<button class="red" onclick="act('endshow')">発表終了</button>`:`<div class="who">${esc(nm(S.cur.id))} さんが発表中</div>`}</div></div></div>`;
     }else{
       h+=`<div class="msg">${S.showing?esc(nm(S.turn))+' さんが発表中です。発表者の画面を見てください':my?(S.remote?'あなたの番です。準備ができたら発表してください':'あなたの番です。画面を他の人に見せながら発表してください'):esc(nm(S.turn))+' さんの発表を待っています'}</div>`;
       if(my)h+=`<button class="red wide" onclick="act('reveal')">発表する</button>`;
@@ -225,7 +257,7 @@ function render(){
   }else if(ph==='rvote'){
     const done=S.myRVote!==null;
     h+=`<div class="msg">${done?'投票しました。全員の投票を待っています':'一番いいと思う作品に投票してください（自分の作品には投票できません）'}</div>`;
-    h+=`<div class="shelf">`+S.subs.map(s=>s.id===S.me?tsp(s.t,s.b,'あなたの作品（選べません）','dash'):tsp(s.t,s.b,nm(s.id),S.myRVote===s.id?'win':'',done?null:`act('rvote',{target:'${s.id}'})`)).join('')+`</div>`;
+    h+=`<div class="shelf">`+S.subs.map(s=>s.id===S.me?tsp(s.t,s.b,'あなたの作品（選べません）','dash'):tsp(s.t,s.b,nm(s.id),S.myRVote===s.id?'win':'',done?null:`askRVote('${s.id}')`)).join('')+`</div>`;
 
   }else if(ph==='rresult'){
     const R=S.rres,last=S.round>=S.rounds;
@@ -235,7 +267,7 @@ function render(){
 
   }else if(ph==='vote'){
     h+=`<div class="msg">${S.myVote===null?'残ったタイトルです。一番いいと思うものに投票してください（自分の作品も選べます）':'投票しました。全員の投票を待っています'}</div>`;
-    h+=`<div class="shelf">`+S.hist.map((x,i)=>tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}`,S.myVote===i?'win':'',S.myVote===null?`act('vote',{idx:${i}})`:null)).join('')+`</div>`;
+    h+=`<div class="shelf">`+S.hist.map((x,i)=>tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}`,S.myVote===i?'win':'',S.myVote===null?`askFinal(${i})`:null)).join('')+`</div>`;
 
   }else if(ph==='final'){
     const mx=Math.max(...S.votes),win=S.hist.map((_,i)=>i).filter(i=>S.votes[i]===mx);
@@ -248,7 +280,6 @@ function render(){
     h+=host?`<button class="red wide" onclick="act('again')">もう一度遊ぶ</button>`:`<p>ホストが「もう一度遊ぶ」を選べます</p>`;
   }
   if(host&&ph!=='lobby'&&ph!=='final'&&!S.cur)h+=`<button class="ghost wide" style="margin-top:28px;font-size:16px" onclick="resetGame()">ゲームを中止して最初からやり直す</button>`;
-  if(err)h+=`<div class="msg">${esc(err)}</div>`;
   $.innerHTML=h;
   renderChat();
 }
