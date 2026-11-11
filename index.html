@@ -460,8 +460,8 @@ const bk = (t, b, w, by, covInfo, interactive = false) => {
   const tFs = baseFs * d.ttl.s;
   const aFs = (w * 0.05) * d.au.s;
   
-  // インラインスタイルで座標・サイズ・縦横を適応
-  const tStyle = `left:${d.ttl.x}%; top:${d.ttl.y}%; writing-mode:${d.ttl.d==='v'?'vertical-rl':'horizontal-tb'}; display:flex; flex-direction:${d.ttl.d==='v'?'row-reverse':'column'}; gap:${tFs*0.5}px;`;
+  // ★flex-direction: column に修正して綺麗に改行されるように変更
+  const tStyle = `left:${d.ttl.x}%; top:${d.ttl.y}%; writing-mode:${d.ttl.d==='v'?'vertical-rl':'horizontal-tb'}; display:flex; flex-direction:column; gap:${tFs*0.5}px;`;
   const aStyle = `left:${d.au.x}%; top:${d.au.y}%; writing-mode:${d.au.d==='v'?'vertical-rl':'horizontal-tb'}; font-size:${aFs}px;`;
   
   const evTitle = interactive ? `onpointerdown="dragStart(event,'ttl')" onpointermove="dragMove(event,'ttl')" onpointerup="dragEnd(event)" onpointercancel="dragEnd(event)"` : '';
@@ -533,7 +533,6 @@ function render(){
       
       const ok=sel.t!==null&&sel.b!==null;
       
-      // プレビュー＆ドラッグ編集UI
       if(ok){
         h+=`<h2>表紙プレビュー ＆ 配置調整</h2>`;
         h+=`<div style="display:flex;justify-content:center;margin-bottom:12px;">`+bk(S.hand[sel.t].s,S.hand[sel.b].s, Math.min(240,innerWidth-32), nm(S.me), sel.cov+'|'+sel.color+'|'+JSON.stringify(sel.design), true)+`</div>`;
@@ -560,7 +559,6 @@ function render(){
       h+=`<h2>表紙デザイン</h2><div class="cov-select">`+COVERS.map(c=>`<div class="cov-item ${sel.cov===c.f?'sel':''}" onclick="sel.cov='${c.f}';render()"><img src="${c.f}" alt="${c.n}"><p>${c.n}</p></div>`).join('')+`</div>`;
       h+=`<h2>文字色</h2><div class="row2"><button class="${sel.color==='black'?'red':'ghost'}" onclick="sel.color='black';render()">黒字</button><button class="${sel.color==='white'?'red':'ghost'}" onclick="sel.color='white';render()">白字</button></div>`;
       
-      // 提出時にデザイン情報（JSON）も合体させて送る
       h+=`<button class="red wide" ${ok?'':'disabled'} style="margin-top:16px;" onclick="act('submit',{t:sel.t,b:sel.b,cov:sel.cov+'|'+sel.color+'|'+JSON.stringify(sel.design)})">この表紙デザインで提出</button>`;
     }
 
