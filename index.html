@@ -282,14 +282,14 @@ h2{font-size:18px;margin:16px 0 4px;text-shadow:0 1px 3px rgba(0,0,0,0.6)}
 .side h3{margin:0 0 12px;font-size:15px;color:var(--c);text-align:center;border-bottom:1.5px solid rgba(255,255,255,0.15);padding-bottom:4px}
 .rack{display:flex;flex-direction:row-reverse;flex-wrap:wrap;gap:8px}
 
-/* 本（装丁）：生成した画像(cover01.jpg)を使用してリアルな表紙にする */
+/* 本（装丁）：生成した画像(cover_red.jpg)を使用してサスペンス風のリアルな表紙にする */
 .bk{
   position:relative;
   flex:none;
   width:var(--w);
   height:calc(var(--w)*1.5); /* 本の縦横比に微調整 */
   margin:16px auto;
-  background: url('cover01.jpg') center center / cover no-repeat;
+  background: url('cover_red.jpg') center center / cover no-repeat;
   border-radius:4px 8px 8px 4px;
   box-shadow:6px 14px 28px rgba(0,0,0,0.7);
   transition:transform 0.3s;
@@ -300,7 +300,7 @@ h2{font-size:18px;margin:16px 0 4px;text-shadow:0 1px 3px rgba(0,0,0,0.6)}
 .bk::before{display:none;}
 .bk .rl{display:none;}
 
-/* タイトルの文字色を、紺色の表紙に映える箔押し風の「金（淡いベージュ）」に変更 */
+/* タイトルの文字色を、赤い表紙に映える箔押し風の「金（淡いベージュ）」に変更 */
 .bk .ttl{
   position:absolute;
   top:calc(var(--w)*.2);
@@ -523,8 +523,8 @@ function toast(msg){const el=document.getElementById('toastbox');el.innerHTML=`<
 function resetGame(){ask('この部屋を終了します。<br>参加者・チャット・ここまでの進行がすべて消え、全員が最初の画面に戻ります。','終了する',()=>act('reset'))}
 function inviteUrl(){return base+'?room='+S.code}
 function share(){
-  const u=inviteUrl(),t='横暴編集長（タイトル大喜利）に参加してね。部屋コード：'+S.code+'
-';
+  const u=inviteUrl();
+  const t=`横暴編集長（タイトル大喜利）に参加してね。部屋コード：${S.code}\n`;
   if(navigator.share){navigator.share({title:'横暴編集長',text:t,url:u}).catch(()=>{})}
   else location.href='https://line.me/R/msg/text/?'+encodeURIComponent(t+u);
 }
