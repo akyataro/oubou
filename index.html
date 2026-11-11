@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#161b23">
+<meta name="theme-color" content="#eef1f5" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#161b23" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -11,462 +11,122 @@
 :root{--paper:#eef1f5;--ink:#1b2430;--red:#d6303b;--blue:#2f64c4;--hl:#ffe45c;--line:#c9d0da;--topbg:#f9d3d6;--botbg:#d3e2fa;--sheet:#fff;--cov:#f4eddc}
 @media(prefers-color-scheme:dark){:root{--paper:#161b23;--ink:#e8ecf2;--line:#343d4b;--topbg:#5a2a2f;--botbg:#26405f;--sheet:#222a35;--cov:#2c2822}}
 *{box-sizing:border-box}
-
-/* 背景を完全に background.jpg に統合。スマホサイズに固定して全体の空気感を統一 */
-body{
-  margin:0;
-  background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.25)), url('background.jpg') center center / cover no-repeat fixed;
-  color:#fff;
-  font:18px/1.6 system-ui,"Hiragino Sans","Noto Sans JP",sans-serif;
-}
-#app{max-width:640px;margin:0 auto;padding:12px;position:relative;z-index:1}
-h1{font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:28px;margin:8px 0 4px;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.6)}
+body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.6 system-ui,"Hiragino Sans","Noto Sans JP",sans-serif}
+#app{max-width:640px;margin:0 auto;padding:12px}
+h1{font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:28px;margin:8px 0 4px}
 .sub{color:var(--red);font-weight:700;margin:0 0 16px}
-
-/* 入力とボタン：デスク上の道具としての存在感をアップ */
-input{
-  width:100%;
-  font-size:20px;
-  padding:14px;
-  border:2px solid rgba(255,255,255,0.4);
-  border-radius:6px;
-  background:rgba(0, 0, 0, 0.4);
-  color:#fff;
-  margin:6px 0;
-  backdrop-filter:blur(4px);
-  -webkit-backdrop-filter:blur(4px);
-  transition:all 0.3s;
-}
-input:focus{
-  border-color:var(--red);
-  background:rgba(0,0,0,0.6);
-  outline:none;
-}
-button{
-  font:inherit;
-  font-size:20px;
-  font-weight:700;
-  padding:16px 18px;
-  border:none;
-  border-radius:6px;
-  background:#fff;
-  color:#1b2430;
-  cursor:pointer;
-  box-shadow:0 4px 12px rgba(0,0,0,0.3);
-  transition:transform 0.1s, box-shadow 0.1s;
-}
-button.red{
-  background:linear-gradient(135deg, #d6303b, #b31d27);
-  color:#fff;
-  text-shadow:0 1px 2px rgba(0,0,0,0.3);
-  box-shadow:0 4px 14px rgba(214,48,59,0.4);
-}
-button.red:active:not(:disabled){
-  transform:translateY(2px);
-  box-shadow:0 2px 6px rgba(214,48,59,0.4);
-}
-button.ghost{
-  background:rgba(255,255,255,0.1);
-  color:#fff;
-  border:1.5px solid rgba(255,255,255,0.3);
-  backdrop-filter:blur(4px);
-  -webkit-backdrop-filter:blur(4px);
-}
+input{width:100%;font-size:20px;padding:14px;border:2px solid var(--ink);border-radius:4px;background:transparent;color:var(--ink);margin:6px 0}
+button{font:inherit;font-size:20px;font-weight:700;padding:16px 18px;border:2px solid var(--ink);border-radius:4px;background:var(--ink);color:var(--paper);cursor:pointer}
+button.red{background:var(--red);border-color:var(--red);color:#fff}
+button.ghost{background:transparent;color:var(--ink)}
 button.wide{width:100%;margin-top:8px}
-button:disabled{opacity:.35;transform:none !important;box-shadow:none !important}
+button:disabled{opacity:.35}
 button:focus-visible,input:focus-visible{outline:3px solid var(--red);outline-offset:2px}
-
-/* 上部情報バー：より見やすくスマートに */
-.bar{
-  display:flex;
-  justify-content:space-between;
-  border-bottom:1.5px solid rgba(255,255,255,0.25);
-  padding-bottom:8px;
-  margin-bottom:12px;
-  font-weight:700;
-  font-size:16px;
-  text-shadow:0 1px 3px rgba(0,0,0,0.8);
-}
-
-/* 参加者スコア：暗い背景でもしっかり映えるように */
-.score{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 16px;font-size:15px}
-.score span{
-  border:1.5px solid rgba(255,255,255,0.25);
-  padding:4px 12px;
-  border-radius:99px;
-  background:rgba(22, 27, 35, 0.65);
-  backdrop-filter:blur(4px);
-  -webkit-backdrop-filter:blur(4px);
-  box-shadow:0 2px 6px rgba(0,0,0,0.2);
-  transition:all 0.3s;
-}
-.score .ok{
-  background:var(--hl);
-  color:#1b2430;
-  border-color:var(--hl);
-  box-shadow:0 2px 8px rgba(255,228,92,0.5);
-  transform:scale(1.05);
-}
-
-/* メッセージ枠を校正付箋・原稿メモ風に */
-.msg{
-  position:relative;
-  padding:15px 20px;
-  background:linear-gradient(135deg, #fef2c0, #fcf2bd);
-  color:#222;
-  border:none;
-  border-left:6px solid #e1b12c;
-  border-radius:3px 8px 8px 3px;
-  margin:18px 0;
-  font-weight:700;
-  box-shadow:2px 6px 16px rgba(0,0,0,0.3);
-  transform:rotate(-0.5deg);
-}
-@media(prefers-color-scheme:dark){
-  .msg{
-    background:linear-gradient(135deg, #443c2c, #3a3324);
-    color:#eae2cc;
-    border-left-color:#b59b2d;
-    box-shadow:2px 6px 20px rgba(0,0,0,0.5);
-  }
-}
+.bar{display:flex;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:12px;font-weight:700}
+.score{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 16px;font-size:16px}
+.score span{border:1px solid var(--line);padding:3px 10px;border-radius:99px}
+.score i{font-style:normal;color:var(--red);font-weight:700;margin-left:8px}
+.score .ok{background:var(--hl);color:#1b2430;border-color:var(--hl)}
+.msg{padding:10px;border:2px dashed var(--red);margin:10px 0}
 .msg small{opacity:.8}
-
-/* 提出時スタンプ（ハンコ）風エフェクト */
-.stamp-container { position: relative; }
-.stamp-v {
-  position: absolute;
-  top: 15px; right: 15px;
-  border: 3px double var(--red);
-  color: var(--red);
-  font-family: "Noto Serif JP", serif;
-  font-weight: 900;
-  font-size: 20px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  transform: rotate(-12deg) scale(1.2);
-  opacity: 0.85;
-  text-shadow: none;
-  pointer-events: none;
-  background: rgba(22, 27, 35, 0.1);
-  box-shadow: 0 0 4px rgba(214,48,59,0.1);
-}
-
-.code{font-size:40px;letter-spacing:.2em;font-weight:900;text-shadow:0 2px 8px rgba(0,0,0,0.5)}
+.code{font-size:40px;letter-spacing:.2em;font-weight:900}
 .row2{display:flex;gap:8px;margin:8px 0}.row2 button{flex:1;font-size:16px;padding:12px 6px}
-.hint{font-size:14px;opacity:.8;margin:4px 0 12px;text-shadow:0 1px 3px rgba(0,0,0,0.5)}
+.hint{font-size:14px;opacity:.8;margin:4px 0 12px}
 .bar{align-items:center}
 .who{flex:1;text-align:center;font-weight:700;align-self:center}
 .stagebar .row2{margin:0}
 .row2.rev{flex-direction:row-reverse}
-
-/* チャット：デザインを大幅改善し、半透明のアプリ風UIにして重なりを防止 */
-#chat{
-  position:fixed;
-  top:0;left:0;
-  z-index:50;
-  width:100%;
-  max-width:640px;
-  left:50%;
-  transform:translateX(-50%);
-  padding:10px 12px 6px;
-  pointer-events:none;
-}
+#chat{position:fixed;top:0;left:0;z-index:50;width:min(100vw,520px);padding:6px 8px;pointer-events:none}
 #chat>*{pointer-events:auto}
-.ctop{
-  display:flex;
-  gap:8px;
-  align-items:center;
-}
-.ctop input{
-  margin:0;flex:1;min-width:0;
-  font-size:16px;
-  padding:10px 16px;
-  background:rgba(22, 27, 35, 0.85);
-  border:1.5px solid rgba(255,255,255,0.25);
-  border-radius:24px;
-  color:#fff;
-}
-.ctop button{
-  font-size:14px;
-  padding:10px 18px;
-  white-space:nowrap;
-  border-radius:24px;
-  box-shadow:0 2px 8px rgba(0,0,0,0.4);
-}
-.ctop b{
-  margin-left:4px;
-  background:var(--red);
-  color:#fff;
-  border-radius:99px;
-  padding:0 7px;
-  font-size:12px;
-}
-/* メッセージログ：すりガラス調でメッセージがLINE風の吹き出しになるデザイン */
-#clog{
-  margin-top:8px;
-  max-height:35vh;
-  max-height:35dvh;
-  overflow-y:auto;
-  padding:8px 10px;
-  border-radius:12px;
-  background:rgba(22, 27, 35, 0.85);
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
-  border:1.5px solid rgba(255,255,255,0.15);
-  box-shadow:0 8px 32px rgba(0,0,0,0.5);
-  font-size:14px;
-  line-height:1.45;
-}
-.cm{
-  margin-bottom:8px;
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-}
-.cm b{
-  font-size:11px;
-  opacity:0.75;
-  margin-left:6px;
-  margin-bottom:2px;
-}
-.cm span{
-  background:rgba(255,255,255,0.12);
-  border-radius:6px 14px 14px 14px;
-  padding:6px 12px;
-  color:#fff;
-  display:inline-block;
-  max-width:85%;
-  word-break:break-all;
-}
-/* 自分のチャットと区別（便宜上、全ての吹き出しを見やすく） */
-.cm.own{
-  align-items:flex-end;
-}
-.cm.own span{
-  background:rgba(214, 48, 59, 0.25);
-  border-radius:14px 6px 14px 14px;
-}
-
-.online #app{padding-top:68px}
-.online .stage{top:60px;height:calc(100vh - 60px);height:calc(100dvh - 60px)}
-
-.mback{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
-.mbox{background:#1e2430;color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:14px;padding:24px;width:100%;max-width:420px;box-shadow:0 12px 40px rgba(0,0,0,0.5);animation:popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)}
-@keyframes popIn { from { transform: scale(0.9); opacity: 0 } to { transform: scale(1); opacity: 1 } }
-.mbox p{margin:0 0 16px;line-height:1.7}
+.ctop{display:flex;gap:6px;align-items:center}
+.ctop input{margin:0;flex:1;min-width:0;font-size:16px;padding:7px 10px;background:var(--paper)}
+.ctop button{font-size:14px;padding:7px 10px;white-space:nowrap}
+.ctop b{margin-left:4px;background:var(--red);color:#fff;border-radius:99px;padding:0 6px}
+#clog{margin-top:4px;max-height:30vh;max-height:30dvh;overflow-y:auto;padding:6px 8px;border-radius:6px;background:color-mix(in srgb,var(--paper) 88%,transparent);font-size:15px;line-height:1.45}
+.cm{word-break:break-all}.cm b{color:var(--red);margin-right:6px}
+.online #app{padding-top:58px}
+.online .stage{top:50px;height:calc(100vh - 50px);height:calc(100dvh - 50px)}
+.mback{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+.mbox{background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:8px;padding:18px;width:100%;max-width:420px}
+.mbox p{margin:0 0 14px;line-height:1.7}
 .mbox input{font-size:16px}
-#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:80;max-width:90vw;padding:12px 20px;border-radius:30px;background:#fff;color:#121824;font-weight:700;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:80;max-width:90vw;padding:10px 16px;border-radius:8px;background:var(--ink);color:var(--paper);font-weight:700;font-size:16px}
 .verbanner{background:var(--red);color:#fff;padding:8px 10px;border-radius:4px;margin-bottom:10px;font-size:15px}
 .nums{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 16px}.nums button{padding:14px 0}
-img{display:block;margin:8px auto;background:#fff;padding:6px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
-h2{font-size:18px;margin:16px 0 4px;text-shadow:0 1px 3px rgba(0,0,0,0.6)}
+img{display:block;margin:8px auto;background:#fff;padding:6px}
+h2{font-size:18px;margin:16px 0 4px}
 
-/* 札：なめらかなアニメーションと影を追加して触り心地を強化 */
-.sp{position:relative;writing-mode:vertical-rl;text-orientation:mixed;text-combine-upright:digits 3;font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:var(--fs,clamp(18px,5.2vw,24px));line-height:1.35;text-align:center;color:#1b2430;padding:34px 7px 28px;margin:0;border:2.5px solid #1b2430;border-radius:4px;cursor:pointer;box-shadow:2px 4px 10px rgba(0,0,0,0.4);transition:transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s}
-.sp.top{--c:var(--red);background:linear-gradient(var(--c),var(--c)) top/100% 24px no-repeat,linear-gradient(var(--c),var(--c)) bottom/100% 12px no-repeat,#f9d4d6}
-.sp.bot{--c:var(--blue);background:linear-gradient(var(--c),var(--c)) top/100% 24px no-repeat,linear-gradient(var(--c),var(--c)) bottom/100% 12px no-repeat,#d4e2f9}
+/* 札：小説の背表紙風（縦書き） */
+.sp{position:relative;writing-mode:vertical-rl;text-orientation:mixed;text-combine-upright:digits 3;font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:var(--fs,clamp(18px,5.2vw,24px));line-height:1.35;text-align:center;color:var(--ink);padding:34px 7px 28px;margin:0;border:2px solid var(--ink);border-radius:3px;cursor:pointer}
+.sp.top{--c:var(--red);background:linear-gradient(var(--c),var(--c)) top/100% 24px no-repeat,linear-gradient(var(--c),var(--c)) bottom/100% 12px no-repeat,var(--topbg)}
+.sp.bot{--c:var(--blue);background:linear-gradient(var(--c),var(--c)) top/100% 24px no-repeat,linear-gradient(var(--c),var(--c)) bottom/100% 12px no-repeat,var(--botbg)}
 .sp::before,.sp::after{content:"";position:absolute;left:5px;right:5px;border-top:1px solid var(--c)}
 .sp::before{top:29px}.sp::after{bottom:19px}
 .sp .mk{position:absolute;top:0;left:0;right:0;height:24px;line-height:24px;writing-mode:horizontal-tb;font-size:13px;font-style:normal;font-weight:700;color:#fff;text-align:center}
-/* 札をタップしたときの沈み込み */
-.sp:active:not(:disabled){transform:translateY(2px);box-shadow:1px 2px 4px rgba(0,0,0,0.2)}
-/* 選ばれた札はフワッと浮き上がって傾く */
-.sp.sel{transform:translateY(-12px) rotate(-2deg);box-shadow:0 0 0 4px var(--hl), 4px 12px 20px rgba(0,0,0,0.5);z-index:2}
-.sp:disabled{opacity:1;cursor:default;box-shadow:none}
-
+.sp.sel{transform:translateY(-8px);box-shadow:0 0 0 4px var(--hl),0 10px 14px rgba(0,0,0,.25)}
+.sp:disabled{opacity:1;cursor:default}
 .two{display:flex;flex-direction:row-reverse;gap:8px;margin:8px 0}
-.side{flex:1;padding:12px;border-radius:8px;min-height:150px;border:2px dashed rgba(255,255,255,0.25);background:rgba(0,0,0,0.3)}
-.side.top{--c:var(--red);background:rgba(214,48,59,0.06)}
-.side.bot{--c:var(--blue);background:rgba(47,100,196,0.06)}
-.side h3{margin:0 0 12px;font-size:15px;color:var(--c);text-align:center;border-bottom:1.5px solid rgba(255,255,255,0.15);padding-bottom:4px}
-.rack{display:flex;flex-direction:row-reverse;flex-wrap:wrap;gap:8px}
+.side{flex:1;padding:8px;border-radius:6px;min-height:150px}
+.side.top{--c:var(--red);background:color-mix(in srgb,var(--red) 13%,transparent)}
+.side.bot{--c:var(--blue);background:color-mix(in srgb,var(--blue) 14%,transparent)}
+.side h3{margin:0 0 8px;font-size:14px;color:var(--c)}
+.rack{display:flex;flex-direction:row-reverse;flex-wrap:wrap;gap:8px;padding-top:8px}
 
-/* 本（装丁）：生成した画像(cover_red.jpg)を使用してサスペンス風のリアルな表紙にする */
-.bk{
-  position:relative;
-  flex:none;
-  width:var(--w);
-  height:calc(var(--w)*1.5); /* 本の縦横比に微調整 */
-  margin:16px auto;
-  background: url('cover_red.jpg') center center / cover no-repeat;
-  border-radius:4px 8px 8px 4px;
-  box-shadow:6px 14px 28px rgba(0,0,0,0.7);
-  transition:transform 0.3s;
-}
-.bk:hover{transform:translateY(-4px);box-shadow:8px 18px 32px rgba(0,0,0,0.8)}
+/* 画像表紙デザイン */
+.bk{position:relative;flex:none;width:var(--w);height:calc(var(--w)*1.4);margin:12px auto;background:var(--cov);background-size:cover;background-position:center;color:var(--ink);border-radius:2px 6px 6px 2px;box-shadow:4px 6px 12px rgba(0,0,0,.25);overflow:hidden}
+.bk .ttl{position:absolute;top:calc(var(--w)*.18);bottom:calc(var(--w)*.18);left:calc(var(--w)*.15);right:calc(var(--w)*.15);display:flex;flex-direction:row-reverse;justify-content:center;align-items:flex-start;gap:calc(var(--fs)*.5);text-shadow:0 0 4px rgba(255,255,255,0.8), 0 0 8px rgba(255,255,255,0.8);z-index:2}
+.bk .ln{writing-mode:vertical-rl;text-orientation:mixed;text-combine-upright:digits 3;font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:var(--fs);line-height:1.3;white-space:nowrap}
+.bk .au{position:absolute;left:calc(var(--w)*.1);bottom:calc(var(--w)*.14);writing-mode:vertical-rl;font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:700;font-size:calc(var(--w)*.05);letter-spacing:.15em;text-shadow:0 0 4px rgba(255,255,255,0.8);z-index:2}
 
-/* これまでCSSで描いていた擬似的な線は画像を活かすため消す */
-.bk::before{display:none;}
-.bk .rl{display:none;}
-
-/* タイトルの文字色を、赤い表紙に映える箔押し風の「金（淡いベージュ）」に変更 */
-.bk .ttl{
-  position:absolute;
-  top:calc(var(--w)*.2);
-  bottom:calc(var(--w)*.2);
-  left:calc(var(--w)*.15);
-  right:calc(var(--w)*.15);
-  display:flex;flex-direction:row-reverse;justify-content:center;align-items:flex-start;
-  gap:calc(var(--fs)*.5);
-}
-.bk .ln{
-  writing-mode:vertical-rl;text-orientation:mixed;text-combine-upright:digits 3;
-  font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;
-  font-weight:900;
-  font-size:var(--fs);
-  line-height:1.3;
-  white-space:nowrap;
-  color:#e5cca0;
-  text-shadow: 1px 2px 4px rgba(0,0,0,0.8);
-}
-.bk .au{
-  position:absolute;
-  left:calc(var(--w)*.12);
-  bottom:calc(var(--w)*.12);
-  writing-mode:vertical-rl;
-  font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;
-  font-weight:700;
-  font-size:calc(var(--w)*.05);
-  letter-spacing:.15em;
-  color:#d5b98a;
-  text-shadow: 1px 2px 4px rgba(0,0,0,0.8);
-}
+/* 表紙選択UI */
+.cov-select{display:flex;overflow-x:auto;gap:12px;padding:8px 0 16px;scroll-snap-type:x mandatory}
+.cov-item{flex:none;width:100px;scroll-snap-align:start;cursor:pointer;border:3px solid transparent;border-radius:6px;transition:0.2s}
+.cov-item img{width:100%;height:140px;object-fit:cover;border-radius:4px;margin:0;padding:0;display:block}
+.cov-item.sel{border-color:var(--red);transform:translateY(-4px);box-shadow:0 4px 8px rgba(0,0,0,.2)}
+.cov-item p{margin:4px 0 0;font-size:12px;text-align:center;font-weight:700;line-height:1.2}
 
 .wins{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 20px}
 .wins .vt{text-align:center;font-weight:700;color:var(--red)}
-.verdict{font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:clamp(20px,5.4vw,26px);line-height:1.8;text-align:center;margin:18px 0;padding:14px 8px;border-top:3px double rgba(255,255,255,0.3);border-bottom:3px double rgba(255,255,255,0.3)}
+.verdict{font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:clamp(20px,5.4vw,26px);line-height:1.8;text-align:center;margin:18px 0;padding:14px 8px;border-top:3px double var(--ink);border-bottom:3px double var(--ink)}
 .verdict small{display:block;font:15px system-ui;font-weight:400;opacity:.8}
 
-/* 結果発表：本そのものは変えず、背景に光る後光（オーラ）エフェクトを追加 */
-.wins > div { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; }
-.wins > div::before {
-  content: "";
-  position: absolute;
-  top: 40%; left: 50%;
-  width: 140%; padding-top: 140%;
-  background: radial-gradient(circle, rgba(212,175,55,0.3) 0%, rgba(212,175,55,0) 70%);
-  transform: translate(-50%, -50%);
-  z-index: -1;
-  animation: auraPulse 2.5s ease-in-out infinite alternate;
-  pointer-events: none;
-}
-@keyframes auraPulse {
-  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
-  100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-}
-.wins .vt { font-size:22px; color:#d4af37; text-shadow:0 2px 4px rgba(0,0,0,0.5); margin-top:16px; position:relative; z-index:2; }
-
-/* 完成したタイトル（縦書き1行）の質感を向上 */
+/* 完成したタイトル（縦書き1行） */
 .shelf{display:flex;flex-direction:row-reverse;flex-wrap:wrap;gap:10px;margin:10px 0}
-.tsp{display:flex;flex-direction:row-reverse;align-items:stretch;gap:6px;padding:14px 8px 10px;margin:0;border:2.5px solid #1c2431;border-top:10px solid var(--red);border-radius:4px;background:#fff;color:#1b2430;font:inherit;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.35);transition:transform 0.2s, box-shadow 0.2s}
-.tsp:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.tsp{display:flex;flex-direction:row-reverse;align-items:stretch;gap:6px;padding:14px 8px 10px;margin:0;border:2px solid var(--ink);border-top:10px solid var(--red);border-radius:3px;background:var(--sheet);color:var(--ink);font:inherit;cursor:pointer}
 .tsp .tt{writing-mode:vertical-rl;text-orientation:mixed;text-combine-upright:digits 3;font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:clamp(22px,6vw,30px);line-height:1.35}
 .tsp .by{writing-mode:vertical-rl;font-size:13px;line-height:1.3;color:var(--red);font-weight:700;align-self:flex-end}
 .tsp .gp{display:inline-block;height:.7em}
-.tsp.win{background:var(--hl);color:#1b2430;transform:translateY(-6px) scale(1.02);box-shadow:0 6px 16px rgba(0,0,0,0.45);border-color:#1b2430;z-index:10}
-.tsp.dash{border-style:dashed;opacity:.65;box-shadow:none}
+.tsp.win{background:var(--hl);color:#1b2430}
+.tsp.dash{border-style:dashed;opacity:.7}
 .tsp:disabled{opacity:1;cursor:default}
 
-/* 発表画面：周囲を暗転させるスポットライト（フラッシュ防止のためアニメーション排除） */
-.stage{
-  position:fixed;inset:0;z-index:20;
-  background:radial-gradient(circle at 50% 45%, transparent 0%, rgba(10,14,20,0.95) 75%);
-  backdrop-filter:blur(6px);
-  -webkit-backdrop-filter:blur(6px);
-  display:flex;flex-direction:column;height:100vh;height:100dvh;
-}
-.stagebody{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px;}
-.stagebody .bk{margin:0;box-shadow:0 25px 60px rgba(0,0,0,0.8), 0 0 50px rgba(255,255,255,0.15);}
-.stagebar{padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px));}
-
-/* フルスクリーンヒーロー背景とログインフォームのスタイル */
-.hero-container {
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
-  margin: -12px;
-  display: flex;
-  justify-content: center;
-}
-
-.hero-inner {
-  position: relative;
-  width: 100%;
-  max-width: 640px; 
-  min-height: 100vh;
-  min-height: 100dvh;
-  background: url('title01.jpg') top center / 100% auto no-repeat;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.hero-inner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(22,27,35,0) 0%, rgba(22,27,35,0) 35%, rgba(10,14,20,0.85) 65%, rgba(10,14,20,1) 100%);
-  pointer-events: none;
-}
-
-.login-box {
-  position: relative;
-  z-index: 10;
-  background: rgba(22, 27, 35, 0.4);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  padding: 24px 20px;
-  width: 90%;
-  max-width: 400px;
-  margin-top: 50%;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-}
-
-.login-box input {
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  color: #1b2430;
-  font-weight: 700;
-  border-radius: 8px;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-}
-.login-box input::placeholder {
-  color: #888;
-  font-weight: 400;
-}
-.login-box button.red {
-  background: linear-gradient(135deg, #d6303b, #b31d27);
-  border: none;
-  border-radius: 8px;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  box-shadow: 0 4px 12px rgba(214, 48, 59, 0.4);
-  transition: transform 0.1s, box-shadow 0.1s;
-}
-.login-box button.red:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 6px rgba(214, 48, 59, 0.4);
-}
-.login-box .msg {
-  background: rgba(214, 48, 59, 0.9);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  text-align: center;
-  margin-top: 12px;
-  box-shadow:none;
-}
+/* 発表画面（画面いっぱい） */
+.stage{position:fixed;inset:0;z-index:20;background:var(--paper);display:flex;flex-direction:column;height:100vh;height:100dvh}
+.stagebody{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px}.stagebody .bk{margin:0}
+.stagebar{padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.stagebar button{margin:0}
 </style></head><body><div id="app"></div><div id="chat"></div><div id="modal"></div><div id="toastbox"></div>
 <script src="config.js"></script>
 <script>
 const VER='2026-11-10c';
 let ROOM=new URLSearchParams(location.search).get('room')||'';
-let S=null,me=null,code=null,base=location.origin+location.pathname,sel={t:null,b:null},err='';
+const COVERS = [
+  { f: 'cover_darkblue.jpg', n: '標準仕様' },
+  { f: 'cover_blue.jpg', n: 'ライトノベル' },
+  { f: 'cover_red.jpg', n: 'サスペンス' },
+  { f: 'cover_novel.jpg', n: '歴史・純文学' },
+  { f: 'cover_occult.jpg', n: 'オカルト' },
+  { f: 'cover_fantasy.jpg', n: 'ファンタジー' },
+  { f: 'cover_romance.jpg', n: '恋愛小説' },
+  { f: 'cover_picturebook.jpg', n: '絵本・キッズ' },
+  { f: 'cover_sf.jpg', n: 'SF・近未来' },
+  { f: 'cover_action.jpg', n: 'アクション' },
+  { f: 'cover_daily.jpg', n: '日常・エッセイ' },
+  { f: 'cover_academic.jpg', n: '学術・実用書' },
+  { f: 'cover_business.jpg', n: 'ビジネス' },
+  { f: 'cover_japanese.jpg', n: '和風・時代劇' }
+];
+let S=null,me=null,code=null,base=location.origin+location.pathname,sel={t:null,b:null,cov:'cover_darkblue.jpg'},err='';
 const $=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const call=(a,p)=>{
@@ -482,12 +142,12 @@ async function act(a,p){
     if(r.err){err=r.err;if(S)toast(r.err);render();return}
     if(r.closed){leaveRoom('');return}
     if(r.id&&r.code){code=r.code;me=r.id;try{localStorage.setItem('obh',JSON.stringify({code,id:me}))}catch(e){}poll();return}
-    if(a==='submit')sel={t:null,b:null};
+    if(a==='submit')sel={t:null,b:null,cov:'cover_darkblue.jpg'};
     S=r;render();
   }catch(e){err='通信に失敗しました。もう一度お試しください';if(S)toast(err);render()}
 }
 function leaveRoom(msg){  // 部屋から出て、最初の画面に戻る
-  code=null;me=null;S=null;sel={t:null,b:null};err=msg||'';ROOM='';
+  code=null;me=null;S=null;sel={t:null,b:null,cov:'cover_darkblue.jpg'};err=msg||'';ROOM='';
   try{localStorage.removeItem('obh')}catch(e){}
   try{history.replaceState(null,'',location.pathname)}catch(e){}
   document.getElementById('modal').innerHTML='';
@@ -498,7 +158,7 @@ async function poll(){
   try{const r=await call('get',{code,id:me,v:S?S.v:null});
     if(r.same)return;
     if(r.err){leaveRoom(S&&r.err==='部屋が見つかりません'?'部屋が終了しました。新しい部屋に参加するか、作成してください':r.err);return}
-    if(!S||r.v!==S.v){if(S&&(r.phase!==S.phase||r.round!==S.round))sel={t:null,b:null};S=r;render()}}catch(e){}
+    if(!S||r.v!==S.v){if(S&&(r.phase!==S.phase||r.round!==S.round))sel={t:null,b:null,cov:'cover_darkblue.jpg'};S=r;render()}}catch(e){}
 }
 (async function loop(){try{await poll()}catch(e){}setTimeout(loop,S&&S.remote?2000:3000)})();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()});
@@ -523,8 +183,7 @@ function toast(msg){const el=document.getElementById('toastbox');el.innerHTML=`<
 function resetGame(){ask('この部屋を終了します。<br>参加者・チャット・ここまでの進行がすべて消え、全員が最初の画面に戻ります。','終了する',()=>act('reset'))}
 function inviteUrl(){return base+'?room='+S.code}
 function share(){
-  const u=inviteUrl();
-  const t=`横暴編集長（タイトル大喜利）に参加してね。部屋コード：${S.code}\n`;
+  const u=inviteUrl(),t='横暴編集長（タイトル大喜利）に参加してね。部屋コード：'+S.code+'\n';
   if(navigator.share){navigator.share({title:'横暴編集長',text:t,url:u}).catch(()=>{})}
   else location.href='https://line.me/R/msg/text/?'+encodeURIComponent(t+u);
 }
@@ -561,19 +220,15 @@ function renderChat(){
   document.body.classList.toggle('online',online());
   if(!online()){el.innerHTML='';return}
   if(!document.getElementById('cmsg')){
-    el.innerHTML=`<div class="ctop"><input id="cmsg" maxlength="60" placeholder="チャット（60文字まで）" autocomplete="off" enterkeyhint="send" onkeydown="if(event.key==='Enter'&&!event.isComposing)sendChat()"><button class="red" id="cbtnsend" onclick="sendChat()">送信</button><button class="ghost" id="clogbtn" onclick="toggleLog()"></button></div><div id="clog"></div>`;
+    el.innerHTML=`<div class="ctop"><input id="cmsg" maxlength="60" placeholder="チャット（60文字まで）" autocomplete="off" enterkeyhint="send" onkeydown="if(event.key==='Enter'&&!event.isComposing)sendChat()"><button class="red" onclick="sendChat()">送信</button><button class="ghost" id="clogbtn" onclick="toggleLog()"></button></div><div id="clog"></div>`;
   }
   const un=logOpen?0:Math.max(0,(S.cn||0)-seenCn);
-  document.getElementById('clogbtn').innerHTML=(logOpen?'閉じる':'チャット')+(un?`<b>${un}</b>`:'');
-  const log = document.getElementById('clog');
+  document.getElementById('clogbtn').innerHTML=(logOpen?'ログを隠す':'ログ')+(un?`<b>${un}</b>`:'');
+  const log=document.getElementById('clog');
   if(!logOpen){log.style.display='none';return}
   log.style.display='block';
   const near=log.scrollHeight-log.scrollTop-log.clientHeight<48;
-  log.innerHTML = (S.chat || []).map(x => {
-    // プレイヤー名と本人のメッセージを吹き出し化
-    const isOwn = x.n === (S.players.find(p => p.id === S.me) || {}).name;
-    return `<div class="cm ${isOwn ? 'own' : ''}"><b>${esc(x.n)}</b><span>${esc(x.m)}</span></div>`;
-  }).join('') || '<div class="cm" style="opacity:.6; text-align:center;">まだメッセージはありません</div>';
+  log.innerHTML=(S.chat||[]).map(x=>`<div class="cm"><b>${esc(x.n)}</b>${esc(x.m)}</div>`).join('')||'<div class="cm" style="opacity:.6">まだメッセージはありません</div>';
   if(near||justSent){log.scrollTop=log.scrollHeight;justSent=false}
   seenCn=S.cn||0;
 }
@@ -582,35 +237,19 @@ const L=s=>String(s).replace(/\d{1,3}/g,'0').length;
 const spine=(c,o)=>{const t=c.k==='T';return `<button class="sp ${t?'top':'bot'} ${o.on?'sel':''}" ${o.click?`onclick="${o.click}"`:'disabled'}><i class="mk">${t?'上':'下'}</i><span>${esc(c.s)}</span></button>`};
 const sides=(items,lab)=>{const mk=k=>items.filter(x=>x.c.k===k).map(x=>spine(x.c,x)).join('');
   return `<div class="two"><div class="side top"><h3>${lab[0]}</h3><div class="rack">${mk('T')}</div></div><div class="side bot"><h3>${lab[1]}</h3><div class="rack">${mk('B')}</div></div></div>`};
-const bk=(t,b,w,by)=>{const mx=Math.max(L(t),L(b),1),fs=Math.max(12,Math.floor(Math.min(1.05*w/mx,.232*w)));
-  return `<div class="bk" style="--w:${w}px;--fs:${fs}px"><i class="rl t"></i><i class="rl b"></i><div class="ttl"><div class="ln">${esc(t)}</div><div class="ln">${esc(b)}</div></div>${by?`<div class="au">${esc(by)}</div>`:''}</div>`};
+const bk=(t,b,w,by,cov)=>{const mx=Math.max(L(t),L(b),1),fs=Math.max(12,Math.floor(Math.min(1.05*w/mx,.232*w)));
+  return `<div class="bk" style="--w:${w}px;--fs:${fs}px;background-image:url('${cov||'cover_darkblue.jpg'}')"><div class="ttl"><div class="ln">${esc(t)}</div><div class="ln">${esc(b)}</div></div>${by?`<div class="au">${esc(by)}</div>`:''}</div>`};
 const tsp=(t,b,by,cls,click)=>{const tag=click===undefined?'div':'button';const at=click===undefined?'':click===null?'disabled':`onclick="${click}"`;
   return `<${tag} class="tsp ${cls||''}" ${at}><span class="tt">${esc(t)}<i class="gp"></i>${esc(b)}</span><span class="by">${esc(by||'')}</span></${tag}>`};
 
 function render(){
   if(!S){
-    $.innerHTML=`
-    <div class="hero-container">
-      <div class="hero-inner">
-        <div class="login-box">
-          <input id="name" placeholder="名前（10文字まで）" maxlength="10" autocomplete="off">
-          <input id="code" placeholder="部屋コード（参加時）" inputmode="numeric" value="${esc(ROOM)}">
-          <button class="red wide" onclick="start()">${ROOM?'参加する':'部屋を作る／参加する'}</button>
-          ${err?`<div class="msg">${esc(err)}</div>`:''}
-        </div>
-      </div>
-    </div>`;
-    document.body.style.padding = '0';
-    $.style.padding = '0';
-    $.style.maxWidth = '100%';
-    renderChat();return;
+    $.innerHTML=`<h1>横暴編集長</h1><p class="sub">タイトル大喜利</p>
+    <input id="name" placeholder="名前（10文字まで）" maxlength="10" autocomplete="off">
+    <input id="code" placeholder="部屋コード（参加するとき）" inputmode="numeric" value="${esc(ROOM)}">
+    <button class="red wide" onclick="start()">${ROOM?'参加する':'部屋を作る／参加する'}</button>
+    ${err?`<div class="msg">${esc(err)}</div>`:''}`;renderChat();return;
   }
-  
-  // ゲーム中になったら元に戻す
-  document.body.style.padding = '';
-  $.style.padding = '12px';
-  $.style.maxWidth = '640px';
-  
   const P=S.players,ph=S.phase,nm=id=>(P.find(x=>x.id===id)||{}).name||'',host=S.host===S.me;
   const title=ph==='lobby'?'準備中':ph==='vote'?'最終投票':ph==='final'?'結果発表':`第${S.round}号／全${S.rounds}号`;
   let h=`<div class="bar"><span>部屋 ${S.code}</span><span>${title}</span></div>`;
@@ -629,10 +268,7 @@ function render(){
 
   }else if(ph==='write'){
     if(S.mine){
-      h += `<div class="stamp-container">
-              <div class="msg">提出しました。全員の提出を待っています</div>
-              <div class="stamp-v">提出済</div>
-            </div>`+bk(S.mine.t,S.mine.b,Math.min(200,innerWidth-48),nm(S.me));
+      h+=`<div class="msg">提出しました。全員の提出を待っています</div>`+bk(S.mine.t,S.mine.b,Math.min(200,innerWidth-48),nm(S.me),S.mine.cov);
     }else{
       h+=`<div class="msg">手札から、上の札と下の札を1枚ずつ選んでタイトルを作ってください</div>`;
       h+=sides(S.hand.map((c,i)=>({c,on:c.k==='T'?sel.t===i:sel.b===i,click:`pick('${c.k==='T'?'t':'b'}',${i})`})),['上の札','下の札']);
@@ -640,26 +276,25 @@ function render(){
       h+=`<div class="row2 rev"><button class="ghost" ${sw?'disabled':''} onclick="swap('T')">上の札をすべて交換</button><button class="ghost" ${sw?'disabled':''} onclick="swap('B')">下の札をすべて交換</button></div>`+(sw?`<p class="hint">${sw==='T'?'上':'下'}の札を交換しました。交換は1ラウンドに1回です</p>`:`<p class="hint">山札と交換できます（1ラウンドに1回、上か下のどちらか）</p>`);
       const ok=sel.t!==null&&sel.b!==null;
       if(ok)h+=`<div class="shelf" style="justify-content:center">`+tsp(S.hand[sel.t].s,S.hand[sel.b].s,'','win')+`</div>`;
-      h+=`<button class="red wide" ${ok?'':'disabled'} onclick="act('submit',{t:sel.t,b:sel.b})">このタイトルで提出</button>`;
+      
+      h+=`<h3>表紙デザイン</h3><div class="cov-select">`+COVERS.map(c=>`<div class="cov-item ${sel.cov===c.f?'sel':''}" onclick="sel.cov='${c.f}';render()"><img src="${c.f}" alt="${c.n}"><p>${c.n}</p></div>`).join('')+`</div>`;
+      h+=`<button class="red wide" ${ok?'':'disabled'} onclick="act('submit',{t:sel.t,b:sel.b,cov:sel.cov})">このタイトルで提出</button>`;
     }
 
   }else if(ph==='present'){
     const my=S.turn===S.me;
     if(S.cur){
       const w=Math.floor(Math.min(innerWidth-32,(innerHeight-130)/1.4));
-      h+=`<div class="stage"><div class="stagebody">${bk(S.cur.t,S.cur.b,w,nm(S.cur.id))}</div><div class="stagebar"><div class="row2">${S.cur.id===S.me?`<button class="red" onclick="act('endshow')">発表終了</button>`:`<div class="who">${esc(nm(S.cur.id))} さんが発表中</div>`}</div></div></div>`;
+      h+=`<div class="stage"><div class="stagebody">${bk(S.cur.t,S.cur.b,w,nm(S.cur.id),S.cur.cov)}</div><div class="stagebar"><div class="row2">${S.cur.id===S.me?`<button class="red" onclick="act('endshow')">発表終了</button>`:`<div class="who">${esc(nm(S.cur.id))} さんが発表中</div>`}</div></div></div>`;
     }else{
       h+=`<div class="msg">${S.showing?esc(nm(S.turn))+' さんが発表中です。発表者の画面を見てください':my?(S.remote?'あなたの番です。準備ができたら発表してください':'あなたの番です。画面を他の人に見せながら発表してください'):esc(nm(S.turn))+' さんの発表を待っています'}</div>`;
       if(my)h+=`<button class="red wide" onclick="act('reveal')">発表する</button>`;
-      if(S.mine&&!S.presented.includes(S.me))h+=`<h2>あなたのタイトル（まだ公開されていません）</h2>`+bk(S.mine.t,S.mine.b,Math.min(200,innerWidth-48),nm(S.me));
+      if(S.mine&&!S.presented.includes(S.me))h+=`<h2>あなたのタイトル（まだ公開されていません）</h2>`+bk(S.mine.t,S.mine.b,Math.min(200,innerWidth-48),nm(S.me),S.mine.cov);
     }
 
   }else if(ph==='rvote'){
     const done=S.myRVote!==null;
-    h += `<div class="stamp-container">
-            <div class="msg">${done ? '投票しました。全員の投票を待っています' : '一番いいと思う作品に投票してください（自分の作品には投票できません）'}</div>
-            ${done ? '<div class="stamp-v">投票済</div>' : ''}
-          </div>`;
+    h+=`<div class="msg">${done?'投票しました。全員の投票を待っています':'一番いいと思う作品に投票してください（自分の作品には投票できません）'}</div>`;
     h+=`<div class="shelf">`+S.subs.map(s=>s.id===S.me?tsp(s.t,s.b,'あなたの作品（選べません）','dash'):tsp(s.t,s.b,nm(s.id),S.myRVote===s.id?'win':'',done?null:`askRVote('${s.id}')`)).join('')+`</div>`;
 
   }else if(ph==='rresult'){
@@ -669,11 +304,7 @@ function render(){
     h+=host?`<button class="red wide" onclick="act('next')">${last?'最終投票へ':'次の号へ'}</button>`:`<p>ホストが${last?'最終投票':'次の号'}に進めます</p>`;
 
   }else if(ph==='vote'){
-    const done=S.myVote!==null;
-    h += `<div class="stamp-container">
-            <div class="msg">${!done ? '残ったタイトルです。一番いいと思うものに投票してください（自分の作品も選べます）' : '投票しました。全員の投票を待っています'}</div>
-            ${done ? '<div class="stamp-v">投票済</div>' : ''}
-          </div>`;
+    h+=`<div class="msg">${S.myVote===null?'残ったタイトルです。一番いいと思うものに投票してください（自分の作品も選べます）':'投票しました。全員の投票を待っています'}</div>`;
     h+=`<div class="shelf">`+S.hist.map((x,i)=>tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}`,S.myVote===i?'win':'',S.myVote===null?`askFinal(${i})`:null)).join('')+`</div>`;
 
   }else if(ph==='final'){
@@ -682,7 +313,7 @@ function render(){
     const names=win.map(i=>`「${S.hist[i].t}${S.hist[i].b}」`).join('と');
     h+=`<div class="verdict">討論の末、出版する本が決まりました。<br>今回出版する本は${esc(names)}です！${win.length>1?'<small>同率1位のため、複数冊を出版します</small>':''}</div>`;
     const w=win.length===1?Math.min(300,innerWidth-48):Math.min(220,Math.floor((innerWidth-44)/2));
-    h+=`<div class="wins">`+win.map(i=>{const x=S.hist[i];return `<div>${bk(x.t,x.b,w,nm(x.id))}<div class="vt">${S.votes[i]}票</div></div>`}).join('')+`</div>`;
+    h+=`<div class="wins">`+win.map(i=>{const x=S.hist[i];return `<div>${bk(x.t,x.b,w,nm(x.id),x.cov)}<div class="vt">${S.votes[i]}票</div></div>`}).join('')+`</div>`;
     h+=`<h2>投票結果</h2><div class="shelf">`+idx.map(i=>{const x=S.hist[i];return tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}・${S.votes[i]}票`,S.votes[i]===mx?'win':'')}).join('')+`</div>`;
     h+=host?`<button class="red wide" onclick="act('again')">もう一度遊ぶ</button>`:`<p>ホストが「もう一度遊ぶ」を選べます</p>`;
   }
