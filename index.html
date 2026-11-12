@@ -178,14 +178,12 @@ h2{font-size:18px;margin:16px 0 4px;text-shadow:0 1px 3px rgba(0,0,0,0.6)}
   margin:16px auto;background: var(--cov) center center / cover no-repeat;
   border-radius:4px 8px 8px 4px;box-shadow:6px 14px 28px rgba(0,0,0,0.7);
   transition:transform 0.3s;
-  /* ★ バグ対策：文字を大きくしすぎても表紙からはみ出させない */
   overflow: hidden; 
 }
 .bk:hover{transform:translateY(-4px);box-shadow:8px 18px 32px rgba(0,0,0,0.8)}
 .bk::before{display:none;}
 .bk .rl{display:none;}
 
-/* タイトル・作者のベーススタイル */
 .drag-box {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -294,11 +292,10 @@ const COVERS = [
   { f: 'cover_japanese.jpg', n: '和風・時代劇' }
 ];
 
-// 初期デザイン状態（座標とサイズ、縦横設定）
 const defaultDesign = () => ({ ttl:{x:75, y:50, s:1, d:'v'}, au:{x:25, y:85, s:1, d:'v'} });
 let S=null,me=null,code=null,base=location.origin+location.pathname,err='';
 let sel={t:null, b:null, cov:'cover_darkblue.jpg', color:'black', font:'serif', design: defaultDesign()};
-let savedCovScroll = 0; // 表紙リストのスクロール位置を記憶する変数
+let savedCovScroll = 0; 
 
 const $=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -315,7 +312,6 @@ async function act(a,p){
     if(r.err){err=r.err;if(S)toast(r.err);render();return}
     if(r.closed){leaveRoom('');return}
     if(r.id&&r.code){code=r.code;me=r.id;try{localStorage.setItem('obh',JSON.stringify({code,id:me}))}catch(e){}poll();return}
-    // 初期化時にフォント情報等もリセット
     if(a==='submit') sel={t:null, b:null, cov:'cover_darkblue.jpg', color:'black', font:'serif', design: defaultDesign()};
     S=r;render();
   }catch(e){err='通信に失敗しました。もう一度お試しください';if(S)toast(err);render()}
@@ -410,7 +406,6 @@ function renderChat(){
   seenCn=S.cn||0;
 }
 
-// ------ 超軽量なドラッグ＆ドロップ処理 ------
 let dTarget = null, dStartX = 0, dStartY = 0, dInitX = 0, dInitY = 0, dBookW = 0, dBookH = 0;
 window.dragStart = function(e, target) {
   if (e.button !== undefined && e.button !== 0) return; 
@@ -445,7 +440,6 @@ const spine=(c,o)=>{const t=c.k==='T';return `<button class="sp ${t?'top':'bot'}
 const sides=(items,lab)=>{const mk=k=>items.filter(x=>x.c.k===k).map(x=>spine(x.c,x)).join('');
   return `<div class="two"><div class="side top"><h3>${lab[0]}</h3><div class="rack">${mk('T')}</div></div><div class="side bot"><h3>${lab[1]}</h3><div class="rack">${mk('B')}</div></div></div>`};
 
-// 本の描画処理（フォント情報を読み取り、適用する処理を追加）
 const bk = (t, b, w, by, covInfo, interactive = false) => {
   let img = 'cover_darkblue.jpg', col = 'black', fnt = 'serif', d = defaultDesign();
   if (covInfo) {
@@ -453,7 +447,7 @@ const bk = (t, b, w, by, covInfo, interactive = false) => {
     img = p[0] || img;
     if (p[1]) col = p[1];
     if (p[2]) {
-      if (p[2].startsWith('{')) { // 古いデータとの互換性
+      if (p[2].startsWith('{')) { 
         try { Object.assign(d, JSON.parse(p[2])) } catch(e){}
       } else {
         fnt = p[2];
@@ -462,14 +456,14 @@ const bk = (t, b, w, by, covInfo, interactive = false) => {
     }
   }
   
-  // フォントの割り当て
+  // ★ダブルクォーテーションを取り除き、シングルクォーテーションで定義（HTML崩れ防止）
   const fonts = {
-    'serif': '"Noto Serif JP", serif',
-    'sans': '"Noto Sans JP", sans-serif',
-    'retro': '"Kaisei Decol", serif',
-    'bold': '"Dela Gothic One", sans-serif',
-    'scary': '"Reggae One", sans-serif',
-    'cute': '"Yusei Magic", sans-serif'
+    'serif': "'Noto Serif JP', serif",
+    'sans': "'Noto Sans JP', sans-serif",
+    'retro': "'Kaisei Decol', serif",
+    'bold': "'Dela Gothic One', sans-serif",
+    'scary': "'Reggae One', sans-serif",
+    'cute': "'Yusei Magic', sans-serif"
   };
   const ff = fonts[fnt] || fonts['serif'];
   
@@ -497,7 +491,6 @@ const bk = (t, b, w, by, covInfo, interactive = false) => {
   </div>`;
 };
 
-// 発表・投票画面のリストでもフォントを再現
 const tsp=(t,b,by,cls,click,covInfo)=>{
   let fnt = 'serif';
   if(covInfo){
@@ -505,12 +498,12 @@ const tsp=(t,b,by,cls,click,covInfo)=>{
     if(p[2] && !p[2].startsWith('{')) fnt = p[2];
   }
   const fonts = {
-    'serif': '"Noto Serif JP", serif',
-    'sans': '"Noto Sans JP", sans-serif',
-    'retro': '"Kaisei Decol", serif',
-    'bold': '"Dela Gothic One", sans-serif',
-    'scary': '"Reggae One", sans-serif',
-    'cute': '"Yusei Magic", sans-serif'
+    'serif': "'Noto Serif JP', serif",
+    'sans': "'Noto Sans JP', sans-serif",
+    'retro': "'Kaisei Decol', serif",
+    'bold': "'Dela Gothic One', sans-serif",
+    'scary': "'Reggae One', sans-serif",
+    'cute': "'Yusei Magic', sans-serif"
   };
   const ff = fonts[fnt] || fonts['serif'];
   const tag=click===undefined?'div':'button';
@@ -659,7 +652,6 @@ function render(){
   $.innerHTML=h;
   renderChat();
   
-  // 表紙選択のスクロール位置を復元する処理
   const csel = document.querySelector('.cov-select');
   if(csel) csel.scrollLeft = savedCovScroll;
 }
