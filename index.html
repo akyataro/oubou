@@ -6,7 +6,8 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <title>横暴編集長</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&display=swap" rel="stylesheet">
+<!-- 6種類の日本語フォントを読み込み -->
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Kaisei+Decol:wght@700&family=Noto+Sans+JP:wght@700;900&family=Noto+Serif+JP:wght@700;900&family=Reggae+One&family=Yusei+Magic&display=swap" rel="stylesheet">
 <style>
 :root{--paper:#eef1f5;--ink:#1b2430;--red:#d6303b;--blue:#2f64c4;--hl:#ffe45c;--line:#c9d0da;--topbg:#f9d3d6;--botbg:#d3e2fa;--sheet:#fff;--cov:#f4eddc}
 @media(prefers-color-scheme:dark){:root{--paper:#161b23;--ink:#e8ecf2;--line:#343d4b;--topbg:#5a2a2f;--botbg:#26405f;--sheet:#222a35;--cov:#2c2822}}
@@ -177,6 +178,8 @@ h2{font-size:18px;margin:16px 0 4px;text-shadow:0 1px 3px rgba(0,0,0,0.6)}
   margin:16px auto;background: var(--cov) center center / cover no-repeat;
   border-radius:4px 8px 8px 4px;box-shadow:6px 14px 28px rgba(0,0,0,0.7);
   transition:transform 0.3s;
+  /* ★ バグ対策：文字を大きくしすぎても表紙からはみ出させない */
+  overflow: hidden; 
 }
 .bk:hover{transform:translateY(-4px);box-shadow:8px 18px 32px rgba(0,0,0,0.8)}
 .bk::before{display:none;}
@@ -190,7 +193,6 @@ h2{font-size:18px;margin:16px 0 4px;text-shadow:0 1px 3px rgba(0,0,0,0.6)}
   text-shadow: var(--ts);
   z-index: 5;
 }
-/* 編集モード時の装飾とスマホスクロール防止 */
 .drag-box.interactive {
   cursor: move;
   border: 1.5px dashed rgba(255,255,255,0.7);
@@ -200,11 +202,11 @@ h2{font-size:18px;margin:16px 0 4px;text-shadow:0 1px 3px rgba(0,0,0,0.6)}
   touch-action: none;
 }
 .bk .ln{
-  font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;
+  font-family: var(--ff, "Noto Serif JP", serif);
   font-weight:900;line-height:1.3;white-space:nowrap;
 }
 .bk .au{
-  font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;
+  font-family: var(--ff, "Noto Serif JP", serif);
   font-weight:700;letter-spacing:.15em;
 }
 
@@ -230,7 +232,7 @@ h2{font-size:18px;margin:16px 0 4px;text-shadow:0 1px 3px rgba(0,0,0,0.6)}
 .shelf{display:flex;flex-direction:row-reverse;flex-wrap:wrap;gap:10px;margin:10px 0}
 .tsp{display:flex;flex-direction:row-reverse;align-items:stretch;gap:6px;padding:14px 8px 10px;margin:0;border:2.5px solid #1c2431;border-top:10px solid var(--red);border-radius:4px;background:#fff;color:#1b2430;font:inherit;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.35);transition:transform 0.2s, box-shadow 0.2s}
 .tsp:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
-.tsp .tt{writing-mode:vertical-rl;text-orientation:mixed;text-combine-upright:digits 3;font-family:"Noto Serif JP","Hiragino Mincho ProN",serif;font-weight:900;font-size:clamp(22px,6vw,30px);line-height:1.35}
+.tsp .tt{writing-mode:vertical-rl;text-orientation:mixed;text-combine-upright:digits 3;font-weight:900;font-size:clamp(22px,6vw,30px);line-height:1.35}
 .tsp .by{writing-mode:vertical-rl;font-size:13px;line-height:1.3;color:var(--red);font-weight:700;align-self:flex-end}
 .tsp .gp{display:inline-block;height:.7em}
 .tsp.win{background:var(--hl);color:#1b2430;transform:translateY(-6px) scale(1.02);box-shadow:0 6px 16px rgba(0,0,0,0.45);border-color:#1b2430;z-index:10}
@@ -295,7 +297,8 @@ const COVERS = [
 // 初期デザイン状態（座標とサイズ、縦横設定）
 const defaultDesign = () => ({ ttl:{x:75, y:50, s:1, d:'v'}, au:{x:25, y:85, s:1, d:'v'} });
 let S=null,me=null,code=null,base=location.origin+location.pathname,err='';
-let sel={t:null, b:null, cov:'cover_darkblue.jpg', color:'black', design: defaultDesign()};
+let sel={t:null, b:null, cov:'cover_darkblue.jpg', color:'black', font:'serif', design: defaultDesign()};
+let savedCovScroll = 0; // 表紙リストのスクロール位置を記憶する変数
 
 const $=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -312,12 +315,13 @@ async function act(a,p){
     if(r.err){err=r.err;if(S)toast(r.err);render();return}
     if(r.closed){leaveRoom('');return}
     if(r.id&&r.code){code=r.code;me=r.id;try{localStorage.setItem('obh',JSON.stringify({code,id:me}))}catch(e){}poll();return}
-    if(a==='submit') sel={t:null, b:null, cov:'cover_darkblue.jpg', color:'black', design: defaultDesign()};
+    // 初期化時にフォント情報等もリセット
+    if(a==='submit') sel={t:null, b:null, cov:'cover_darkblue.jpg', color:'black', font:'serif', design: defaultDesign()};
     S=r;render();
   }catch(e){err='通信に失敗しました。もう一度お試しください';if(S)toast(err);render()}
 }
 function leaveRoom(msg){
-  code=null;me=null;S=null;sel={t:null, b:null, cov:'cover_darkblue.jpg', color:'black', design: defaultDesign()};err=msg||'';ROOM='';
+  code=null;me=null;S=null;sel={t:null, b:null, cov:'cover_darkblue.jpg', color:'black', font:'serif', design: defaultDesign()};err=msg||'';ROOM='';
   try{localStorage.removeItem('obh')}catch(e){}
   try{history.replaceState(null,'',location.pathname)}catch(e){}
   document.getElementById('modal').innerHTML='';
@@ -328,7 +332,7 @@ async function poll(){
   try{const r=await call('get',{code,id:me,v:S?S.v:null});
     if(r.same)return;
     if(r.err){leaveRoom(S&&r.err==='部屋が見つかりません'?'部屋が終了しました。新しい部屋に参加するか、作成してください':r.err);return}
-    if(!S||r.v!==S.v){if(S&&(r.phase!==S.phase||r.round!==S.round))sel={t:null, b:null, cov:'cover_darkblue.jpg', color:'black', design: defaultDesign()};S=r;render()}
+    if(!S||r.v!==S.v){if(S&&(r.phase!==S.phase||r.round!==S.round))sel={t:null, b:null, cov:'cover_darkblue.jpg', color:'black', font:'serif', design: defaultDesign()};S=r;render()}
   }catch(e){}
 }
 (async function loop(){try{await poll()}catch(e){}setTimeout(loop,S&&S.remote?2000:3000)})();
@@ -409,7 +413,7 @@ function renderChat(){
 // ------ 超軽量なドラッグ＆ドロップ処理 ------
 let dTarget = null, dStartX = 0, dStartY = 0, dInitX = 0, dInitY = 0, dBookW = 0, dBookH = 0;
 window.dragStart = function(e, target) {
-  if (e.button !== undefined && e.button !== 0) return; // 左クリックとタッチのみ許可
+  if (e.button !== undefined && e.button !== 0) return; 
   dTarget = target;
   dStartX = e.clientX;
   dStartY = e.clientY;
@@ -419,11 +423,11 @@ window.dragStart = function(e, target) {
   dBookW = rect.width;
   dBookH = rect.height;
   e.stopPropagation();
-  e.currentTarget.setPointerCapture(e.pointerId); // 画面外に指が出ても追跡
+  e.currentTarget.setPointerCapture(e.pointerId); 
 };
 window.dragMove = function(e, target) {
   if (dTarget !== target) return;
-  e.preventDefault(); // スマホのスクロールをブロック
+  e.preventDefault(); 
   let nx = dInitX + ((e.clientX - dStartX) / dBookW) * 100;
   let ny = dInitY + ((e.clientY - dStartY) / dBookH) * 100;
   sel.design[target].x = Math.max(0, Math.min(100, nx));
@@ -435,22 +439,39 @@ window.dragEnd = function(e) {
   dTarget = null;
   try { e.currentTarget.releasePointerCapture(e.pointerId); } catch(e){}
 };
-// ---------------------------------------------
 
 const L=s=>String(s).replace(/\d{1,3}/g,'0').length;
 const spine=(c,o)=>{const t=c.k==='T';return `<button class="sp ${t?'top':'bot'} ${o.on?'sel':''}" ${o.click?`onclick="${o.click}"`:'disabled'}><i class="mk">${t?'上':'下'}</i><span>${esc(c.s)}</span></button>`};
 const sides=(items,lab)=>{const mk=k=>items.filter(x=>x.c.k===k).map(x=>spine(x.c,x)).join('');
   return `<div class="two"><div class="side top"><h3>${lab[0]}</h3><div class="rack">${mk('T')}</div></div><div class="side bot"><h3>${lab[1]}</h3><div class="rack">${mk('B')}</div></div></div>`};
 
-// 本の描画処理（プレビューでのインタラクティブ編集対応）
+// 本の描画処理（フォント情報を読み取り、適用する処理を追加）
 const bk = (t, b, w, by, covInfo, interactive = false) => {
-  let img = 'cover_darkblue.jpg', col = 'black', d = defaultDesign();
+  let img = 'cover_darkblue.jpg', col = 'black', fnt = 'serif', d = defaultDesign();
   if (covInfo) {
     const p = covInfo.split('|');
-    img = p[0];
+    img = p[0] || img;
     if (p[1]) col = p[1];
-    if (p[2]) try { Object.assign(d, JSON.parse(p[2])) } catch(e){}
+    if (p[2]) {
+      if (p[2].startsWith('{')) { // 古いデータとの互換性
+        try { Object.assign(d, JSON.parse(p[2])) } catch(e){}
+      } else {
+        fnt = p[2];
+        if (p[3]) try { Object.assign(d, JSON.parse(p[3])) } catch(e){}
+      }
+    }
   }
+  
+  // フォントの割り当て
+  const fonts = {
+    'serif': '"Noto Serif JP", serif',
+    'sans': '"Noto Sans JP", sans-serif',
+    'retro': '"Kaisei Decol", serif',
+    'bold': '"Dela Gothic One", sans-serif',
+    'scary': '"Reggae One", sans-serif',
+    'cute': '"Yusei Magic", sans-serif'
+  };
+  const ff = fonts[fnt] || fonts['serif'];
   
   const tc = col === 'white' ? '#fdfdfd' : '#1b2430';
   const ts = col === 'white' ? '0 1px 4px rgba(0,0,0,0.9), 0 2px 10px rgba(0,0,0,0.8)' : '0 1px 4px rgba(255,255,255,0.9), 0 2px 10px rgba(255,255,255,0.8)';
@@ -460,7 +481,6 @@ const bk = (t, b, w, by, covInfo, interactive = false) => {
   const tFs = baseFs * d.ttl.s;
   const aFs = (w * 0.05) * d.au.s;
   
-  // ★flex-direction: column に修正して綺麗に改行されるように変更
   const tStyle = `left:${d.ttl.x}%; top:${d.ttl.y}%; writing-mode:${d.ttl.d==='v'?'vertical-rl':'horizontal-tb'}; display:flex; flex-direction:column; gap:${tFs*0.5}px;`;
   const aStyle = `left:${d.au.x}%; top:${d.au.y}%; writing-mode:${d.au.d==='v'?'vertical-rl':'horizontal-tb'}; font-size:${aFs}px;`;
   
@@ -468,7 +488,7 @@ const bk = (t, b, w, by, covInfo, interactive = false) => {
   const evAuthor = interactive ? `onpointerdown="dragStart(event,'au')" onpointermove="dragMove(event,'au')" onpointerup="dragEnd(event)" onpointercancel="dragEnd(event)"` : '';
   const cls = interactive ? 'drag-box interactive' : 'drag-box';
 
-  return `<div class="bk" style="--w:${w}px;--cov:url('${img}');--tc:${tc};--ts:${ts}">
+  return `<div class="bk" style="--w:${w}px;--cov:url('${img}');--tc:${tc};--ts:${ts};--ff:${ff}">
     <div class="${cls}" style="${tStyle}" ${evTitle}>
       <div class="ln" style="font-size:${tFs}px">${esc(t)}</div>
       <div class="ln" style="font-size:${tFs}px">${esc(b)}</div>
@@ -477,8 +497,26 @@ const bk = (t, b, w, by, covInfo, interactive = false) => {
   </div>`;
 };
 
-const tsp=(t,b,by,cls,click)=>{const tag=click===undefined?'div':'button';const at=click===undefined?'':click===null?'disabled':`onclick="${click}"`;
-  return `<${tag} class="tsp ${cls||''}" ${at}><span class="tt">${esc(t)}<i class="gp"></i>${esc(b)}</span><span class="by">${esc(by||'')}</span></${tag}>`};
+// 発表・投票画面のリストでもフォントを再現
+const tsp=(t,b,by,cls,click,covInfo)=>{
+  let fnt = 'serif';
+  if(covInfo){
+    const p = covInfo.split('|');
+    if(p[2] && !p[2].startsWith('{')) fnt = p[2];
+  }
+  const fonts = {
+    'serif': '"Noto Serif JP", serif',
+    'sans': '"Noto Sans JP", sans-serif',
+    'retro': '"Kaisei Decol", serif',
+    'bold': '"Dela Gothic One", sans-serif',
+    'scary': '"Reggae One", sans-serif',
+    'cute': '"Yusei Magic", sans-serif'
+  };
+  const ff = fonts[fnt] || fonts['serif'];
+  const tag=click===undefined?'div':'button';
+  const at=click===undefined?'':click===null?'disabled':`onclick="${click}"`;
+  return `<${tag} class="tsp ${cls||''}" ${at}><span class="tt" style="font-family:${ff}">${esc(t)}<i class="gp"></i>${esc(b)}</span><span class="by" style="font-family:${ff}">${esc(by||'')}</span></${tag}>`;
+};
 
 function render(){
   if(!S){
@@ -535,31 +573,43 @@ function render(){
       
       if(ok){
         h+=`<h2>表紙プレビュー ＆ 配置調整</h2>`;
-        h+=`<div style="display:flex;justify-content:center;margin-bottom:12px;">`+bk(S.hand[sel.t].s,S.hand[sel.b].s, Math.min(240,innerWidth-32), nm(S.me), sel.cov+'|'+sel.color+'|'+JSON.stringify(sel.design), true)+`</div>`;
+        h+=`<div style="display:flex;justify-content:center;margin-bottom:12px;">`+bk(S.hand[sel.t].s,S.hand[sel.b].s, Math.min(240,innerWidth-32), nm(S.me), sel.cov+'|'+sel.color+'|'+sel.font+'|'+JSON.stringify(sel.design), true)+`</div>`;
         
         h+=`<div style="background:rgba(0,0,0,0.4); padding:12px; border-radius:8px; margin-bottom:20px; box-shadow:inset 0 2px 6px rgba(0,0,0,0.3);">
           <div style="font-size:13px; color:#ffe45c; margin-bottom:10px; text-align:center; font-weight:700;">※プレビュー上の文字は指で動かせます</div>
           
           <div style="display:flex; gap:6px; align-items:center; margin-bottom:8px;">
             <span style="font-size:14px; width:70px; font-weight:700;">タイトル</span>
-            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.ttl.s=Math.max(0.4, sel.design.ttl.s-0.1);render()">縮小</button>
-            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.ttl.s=Math.min(3.0, sel.design.ttl.s+0.1);render()">拡大</button>
-            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.ttl.d=sel.design.ttl.d==='v'?'h':'v';render()">縦/横</button>
+            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.ttl.s=Math.max(0.5, Math.round((sel.design.ttl.s-0.1)*10)/10);render()">縮小</button>
+            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.ttl.s=Math.min(2.0, Math.round((sel.design.ttl.s+0.1)*10)/10);render()">拡大</button>
+          </div>
+          
+          <div style="display:flex; gap:6px; align-items:center; margin-bottom:8px;">
+            <span style="font-size:14px; width:70px; font-weight:700;">作者名</span>
+            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.au.s=Math.max(0.5, Math.round((sel.design.au.s-0.1)*10)/10);render()">縮小</button>
+            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.au.s=Math.min(2.0, Math.round((sel.design.au.s+0.1)*10)/10);render()">拡大</button>
           </div>
           
           <div style="display:flex; gap:6px; align-items:center;">
-            <span style="font-size:14px; width:70px; font-weight:700;">作者名</span>
-            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.au.s=Math.max(0.4, sel.design.au.s-0.1);render()">縮小</button>
-            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.au.s=Math.min(3.0, sel.design.au.s+0.1);render()">拡大</button>
-            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.au.d=sel.design.au.d==='v'?'h':'v';render()">縦/横</button>
+            <span style="font-size:14px; width:70px; font-weight:700;">文字の向き</span>
+            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="const nd=sel.design.ttl.d==='v'?'h':'v';sel.design.ttl.d=nd;sel.design.au.d=nd;render()">縦書き ⇔ 横書き</button>
           </div>
         </div>`;
       }
       
-      h+=`<h2>表紙デザイン</h2><div class="cov-select">`+COVERS.map(c=>`<div class="cov-item ${sel.cov===c.f?'sel':''}" onclick="sel.cov='${c.f}';render()"><img src="${c.f}" alt="${c.n}"><p>${c.n}</p></div>`).join('')+`</div>`;
+      h+=`<h2>表紙デザイン</h2><div class="cov-select" onscroll="savedCovScroll=this.scrollLeft">`+COVERS.map(c=>`<div class="cov-item ${sel.cov===c.f?'sel':''}" onclick="sel.cov='${c.f}';render()"><img src="${c.f}" alt="${c.n}"><p>${c.n}</p></div>`).join('')+`</div>`;
       h+=`<h2>文字色</h2><div class="row2"><button class="${sel.color==='black'?'red':'ghost'}" onclick="sel.color='black';render()">黒字</button><button class="${sel.color==='white'?'red':'ghost'}" onclick="sel.color='white';render()">白字</button></div>`;
       
-      h+=`<button class="red wide" ${ok?'':'disabled'} style="margin-top:16px;" onclick="act('submit',{t:sel.t,b:sel.b,cov:sel.cov+'|'+sel.color+'|'+JSON.stringify(sel.design)})">この表紙デザインで提出</button>`;
+      h+=`<h2>フォント</h2><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+        <button class="${sel.font==='serif'?'red':'ghost'}" style="font-family:'Noto Serif JP',serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='serif';render()">明朝</button>
+        <button class="${sel.font==='sans'?'red':'ghost'}" style="font-family:'Noto Sans JP',sans-serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='sans';render()">ゴシック</button>
+        <button class="${sel.font==='retro'?'red':'ghost'}" style="font-family:'Kaisei Decol',serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='retro';render()">レトロ</button>
+        <button class="${sel.font==='bold'?'red':'ghost'}" style="font-family:'Dela Gothic One',sans-serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='bold';render()">極太</button>
+        <button class="${sel.font==='scary'?'red':'ghost'}" style="font-family:'Reggae One',sans-serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='scary';render()">ホラー</button>
+        <button class="${sel.font==='cute'?'red':'ghost'}" style="font-family:'Yusei Magic',sans-serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='cute';render()">手書き</button>
+      </div>`;
+
+      h+=`<button class="red wide" ${ok?'':'disabled'} style="margin-top:16px;" onclick="act('submit',{t:sel.t,b:sel.b,cov:sel.cov+'|'+sel.color+'|'+sel.font+'|'+JSON.stringify(sel.design)})">この表紙デザインで提出</button>`;
     }
 
   }else if(ph==='present'){
@@ -579,12 +629,12 @@ function render(){
             <div class="msg">${done ? '投票しました。全員の投票を待っています' : '一番いいと思う作品に投票してください（自分の作品には投票できません）'}</div>
             ${done ? '<div class="stamp-v">投票済</div>' : ''}
           </div>`;
-    h+=`<div class="shelf">`+S.subs.map(s=>s.id===S.me?tsp(s.t,s.b,'あなたの作品（選べません）','dash'):tsp(s.t,s.b,nm(s.id),S.myRVote===s.id?'win':'',done?null:`askRVote('${s.id}')`)).join('')+`</div>`;
+    h+=`<div class="shelf">`+S.subs.map(s=>s.id===S.me?tsp(s.t,s.b,'あなたの作品（選べません）','dash',null,s.cov):tsp(s.t,s.b,nm(s.id),S.myRVote===s.id?'win':'',done?null:`askRVote('${s.id}')`,s.cov)).join('')+`</div>`;
 
   }else if(ph==='rresult'){
     const R=S.rres,last=S.round>=S.rounds;
     h+=`<div class="msg">${R.counts?'今回残す作品が決まりました（同数の場合は、それぞれ残します）':'今回の作品は、すべて最終投票の候補になります'}</div>`;
-    h+=`<div class="shelf">`+S.subs.map(s=>tsp(s.t,s.b,nm(s.id)+(R.counts?'・'+R.counts[s.id]+'票':''),R.kept.includes(s.id)?'win':'')).join('')+`</div>`;
+    h+=`<div class="shelf">`+S.subs.map(s=>tsp(s.t,s.b,nm(s.id)+(R.counts?'・'+R.counts[s.id]+'票':''),R.kept.includes(s.id)?'win':'',undefined,s.cov)).join('')+`</div>`;
     h+=host?`<button class="red wide" onclick="act('next')">${last?'最終投票へ':'次の号へ'}</button>`:`<p>ホストが${last?'最終投票':'次の号'}に進めます</p>`;
 
   }else if(ph==='vote'){
@@ -593,7 +643,7 @@ function render(){
             <div class="msg">${!done ? '残ったタイトルです。一番いいと思うものに投票してください（自分の作品も選べます）' : '投票しました。全員の投票を待っています'}</div>
             ${done ? '<div class="stamp-v">投票済</div>' : ''}
           </div>`;
-    h+=`<div class="shelf">`+S.hist.map((x,i)=>tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}`,S.myVote===i?'win':'',S.myVote===null?`askFinal(${i})`:null)).join('')+`</div>`;
+    h+=`<div class="shelf">`+S.hist.map((x,i)=>tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}`,S.myVote===i?'win':'',S.myVote===null?`askFinal(${i})`:null,x.cov)).join('')+`</div>`;
 
   }else if(ph==='final'){
     const mx=Math.max(...S.votes),win=S.hist.map((_,i)=>i).filter(i=>S.votes[i]===mx);
@@ -602,12 +652,16 @@ function render(){
     h+=`<div class="verdict">討論の末、出版する本が決まりました。<br>今回出版する本は${esc(names)}です！${win.length>1?'<small>同率1位のため、複数冊を出版します</small>':''}</div>`;
     const w=win.length===1?Math.min(300,innerWidth-48):Math.min(220,Math.floor((innerWidth-44)/2));
     h+=`<div class="wins">`+win.map(i=>{const x=S.hist[i];return `<div>${bk(x.t,x.b,w,nm(x.id),x.cov)}<div class="vt">${S.votes[i]}票</div></div>`}).join('')+`</div>`;
-    h+=`<h2>投票結果</h2><div class="shelf">`+idx.map(i=>{const x=S.hist[i];return tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}・${S.votes[i]}票`,S.votes[i]===mx?'win':'')}).join('')+`</div>`;
+    h+=`<h2>投票結果</h2><div class="shelf">`+idx.map(i=>{const x=S.hist[i];return tsp(x.t,x.b,`第${x.r}号・${nm(x.id)}・${S.votes[i]}票`,S.votes[i]===mx?'win':'',undefined,x.cov)}).join('')+`</div>`;
     h+=host?`<button class="red wide" onclick="act('again')">もう一度遊ぶ</button>`:`<p>ホストが「もう一度遊ぶ」を選べます</p>`;
   }
   if(!S.cur)h+=`<button class="ghost wide" style="margin-top:28px;font-size:16px" onclick="resetGame()">部屋を終了して最初からやり直す</button>`;
   $.innerHTML=h;
   renderChat();
+  
+  // 表紙選択のスクロール位置を復元する処理
+  const csel = document.querySelector('.cov-select');
+  if(csel) csel.scrollLeft = savedCovScroll;
 }
 render();
 </script></body></html>
