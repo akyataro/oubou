@@ -21,7 +21,7 @@ const FONTS = {
   'serif': "'Noto Serif JP', serif",
   'sans': "'Noto Sans JP', sans-serif",
   'retro': "'Kaisei Decol', serif",
-  'bold': "'Dela Gothic One', sans-serif",
+  'delicate': "'Hina Mincho', serif",
   'scary': "'Yuji Syuku', serif",
   'cute': "'Yusei Magic', sans-serif"
 };
@@ -190,6 +190,7 @@ const bk = (t, b, w, by, covInfo, interactive = false) => {
     }
   }
   const ff = FONTS[fnt] || FONTS['serif'];
+  const fw = fnt === 'delicate' ? 'font-weight:400;' : '';
   const tc = col === 'white' ? '#fdfdfd' : '#1b2430';
   const ts = col === 'white' ? '0 1px 4px rgba(0,0,0,0.9), 0 2px 10px rgba(0,0,0,0.8)' : '0 1px 4px rgba(255,255,255,0.9), 0 2px 10px rgba(255,255,255,0.8)';
   const mx = Math.max(L(t), L(b), 1);
@@ -199,7 +200,7 @@ const bk = (t, b, w, by, covInfo, interactive = false) => {
   const aFs = (w * 0.05) * d.au.s;
 
   const tStyle = `left:${d.ttl.x}%; top:${d.ttl.y}%; writing-mode:${d.ttl.d==='v'?'vertical-rl':'horizontal-tb'}; display:flex; flex-direction:column; gap:${tFs*0.5}px;`;
-  const aStyle = `left:${d.au.x}%; top:${d.au.y}%; writing-mode:${d.au.d==='v'?'vertical-rl':'horizontal-tb'}; font-size:${aFs}px;`;
+  const aStyle = `left:${d.au.x}%; top:${d.au.y}%; writing-mode:${d.au.d==='v'?'vertical-rl':'horizontal-tb'}; font-size:${aFs}px; ${fw}`;
 
   const evTitle = interactive ? `onpointerdown="dragStart(event,'ttl')" onpointermove="dragMove(event,'ttl')" onpointerup="dragEnd(event)" onpointercancel="dragEnd(event)"` : '';
   const evAuthor = interactive ? `onpointerdown="dragStart(event,'au')" onpointermove="dragMove(event,'au')" onpointerup="dragEnd(event)" onpointercancel="dragEnd(event)"` : '';
@@ -207,8 +208,8 @@ const bk = (t, b, w, by, covInfo, interactive = false) => {
 
   return `<div class="bk" style="--w:${w}px;--cov:url('${img}');--tc:${tc};--ts:${ts};--ff:${ff}">
     <div class="${cls}" style="${tStyle}" ${evTitle}>
-      <div class="ln" style="font-size:${tFs}px">${esc(t)}</div>
-      <div class="ln" style="font-size:${tFs}px">${esc(b)}</div>
+      <div class="ln" style="font-size:${tFs}px; ${fw}">${esc(t)}</div>
+      <div class="ln" style="font-size:${tFs}px; ${fw}">${esc(b)}</div>
     </div>
     ${by ? `<div class="${cls} au" style="${aStyle}" ${evAuthor}>${esc(by)}</div>` : ''}
   </div>`;
@@ -221,9 +222,10 @@ const tsp=(t,b,by,cls,click,covInfo)=>{
     if(p[2] && !p[2].startsWith('{')) fnt = p[2];
   }
   const ff = FONTS[fnt] || FONTS['serif'];
+  const fw = fnt === 'delicate' ? 'font-weight:400;' : '';
   const tag=click===undefined?'div':'button';
   const at=click===undefined?'':click===null?'disabled':`onclick="${click}"`;
-  return `<${tag} class="tsp ${cls||''}" ${at}><span class="tt" style="font-family:${ff}">${esc(t)}<i class="gp"></i>${esc(b)}</span><span class="by" style="font-family:${ff}">${esc(by||'')}</span></${tag}>`;
+  return `<${tag} class="tsp ${cls||''}" ${at}><span class="tt" style="font-family:${ff}; ${fw}">${esc(t)}<i class="gp"></i>${esc(b)}</span><span class="by" style="font-family:${ff}; ${fw}">${esc(by||'')}</span></${tag}>`;
 };
 
 function render(){
@@ -313,7 +315,7 @@ function render(){
         <button class="${sel.font==='serif'?'red':'ghost'}" style="font-family:'Noto Serif JP',serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='serif';render()">明朝</button>
         <button class="${sel.font==='sans'?'red':'ghost'}" style="font-family:'Noto Sans JP',sans-serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='sans';render()">ゴシック</button>
         <button class="${sel.font==='retro'?'red':'ghost'}" style="font-family:'Kaisei Decol',serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='retro';render()">レトロ</button>
-        <button class="${sel.font==='bold'?'red':'ghost'}" style="font-family:'Dela Gothic One',sans-serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='bold';render()">極太</button>
+        <button class="${sel.font==='delicate'?'red':'ghost'}" style="font-family:'Hina Mincho',serif; font-weight:400; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='delicate';render()">繊細</button>
         <button class="${sel.font==='scary'?'red':'ghost'}" style="font-family:'Yuji Syuku',serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='scary';render()">ホラー</button>
         <button class="${sel.font==='cute'?'red':'ghost'}" style="font-family:'Yusei Magic',sans-serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='cute';render()">手書き</button>
       </div>`;
