@@ -31,11 +31,11 @@ const COLORS = [
   { k: 'white',  n: '白', dot: '#ffffff', tc: '#fdfdfd', ts: '0 1px 4px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.9)' },
   { k: 'red',    n: '赤', dot: '#e02424', tc: '#d91c24', ts: '0 0 4px rgba(255,255,255,0.95), 0 2px 6px rgba(0,0,0,0.65)' },
   { k: 'blue',   n: '青', dot: '#1d64d8', tc: '#1958c7', ts: '0 0 4px rgba(255,255,255,0.95), 0 2px 6px rgba(0,0,0,0.65)' },
-  { k: 'gold',   n: '金', dot: '#e6b422', tc: '#ffd447', ts: '0 1px 2px #4a3200, 0 2px 6px rgba(0,0,0,0.9), 0 0 10px rgba(230,180,34,0.6)' },
-  { k: 'silver', n: '銀', dot: '#cbd5e1', tc: '#e2e8f0', ts: '0 1px 2px #1e293b, 0 2px 6px rgba(0,0,0,0.9), 0 0 8px rgba(255,255,255,0.45)' }
+  { k: 'yellow', n: '黄', dot: '#ffe45c', tc: '#ffe45c', ts: '0 1px 4px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.9)' },
+  { k: 'green',  n: '緑', dot: '#2ed573', tc: '#2ed573', ts: '0 1px 4px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.9)' }
 ];
 
-const defaultDesign = () => ({ ttl:{x:50, y:46, s:1, d:'v'}, au:{x:50, y:88, s:1, d:'v'} });
+const defaultDesign = () => ({ ttl:{x:50, y:46, s:1, d:'v'}, au:{x:16, y:84, s:1, d:'v'} });
 let S=null,me=null,code=null,base=location.origin+location.pathname,err='';
 let sel={t:null, b:null, cov:'cover_darkblue.jpg', color:'black', font:'serif', design: defaultDesign()};
 let savedCovScroll = 0;
@@ -210,7 +210,7 @@ const bk = (t, b, w, by, covInfo, interactive = false) => {
   const aFs = (w * 0.05) * d.au.s;
 
   const tStyle = `left:${d.ttl.x}%; top:${d.ttl.y}%; writing-mode:${d.ttl.d==='v'?'vertical-rl':'horizontal-tb'}; display:flex; flex-direction:column; gap:${tFs*0.5}px;`;
-  const aStyle = `left:${d.au.x}%; top:${d.au.y}%; writing-mode:${d.au.d==='v'?'vertical-rl':'horizontal-tb'}; font-size:${aFs}px; ${fw}`;
+  const aStyle = `left:${d.au.x}%; top:${d.au.y}%; writing-mode:${d.au.d==='v'?'vertical-rl':'horizontal-tb'}; font-size:${aFs}px; white-space:nowrap; ${fw}`;
 
   const evTitle = interactive ? `onpointerdown="dragStart(event,'ttl')" onpointermove="dragMove(event,'ttl')" onpointerup="dragEnd(event)" onpointercancel="dragEnd(event)"` : '';
   const evAuthor = interactive ? `onpointerdown="dragStart(event,'au')" onpointermove="dragMove(event,'au')" onpointerup="dragEnd(event)" onpointercancel="dragEnd(event)"` : '';
