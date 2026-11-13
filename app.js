@@ -26,7 +26,16 @@ const FONTS = {
   'cute': "'Yusei Magic', sans-serif"
 };
 
-const defaultDesign = () => ({ ttl:{x:75, y:50, s:1, d:'v'}, au:{x:25, y:85, s:1, d:'v'} });
+const COLORS = [
+  { k: 'black',  n: '黒', dot: '#1b2430', tc: '#1b2430', ts: '0 1px 4px rgba(255,255,255,0.95), 0 0 10px rgba(255,255,255,0.9)' },
+  { k: 'white',  n: '白', dot: '#ffffff', tc: '#fdfdfd', ts: '0 1px 4px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.9)' },
+  { k: 'red',    n: '赤', dot: '#e02424', tc: '#d91c24', ts: '0 0 4px rgba(255,255,255,0.95), 0 2px 6px rgba(0,0,0,0.65)' },
+  { k: 'blue',   n: '青', dot: '#1d64d8', tc: '#1958c7', ts: '0 0 4px rgba(255,255,255,0.95), 0 2px 6px rgba(0,0,0,0.65)' },
+  { k: 'gold',   n: '金', dot: '#e6b422', tc: '#ffd447', ts: '0 1px 2px #4a3200, 0 2px 6px rgba(0,0,0,0.9), 0 0 10px rgba(230,180,34,0.6)' },
+  { k: 'silver', n: '銀', dot: '#cbd5e1', tc: '#e2e8f0', ts: '0 1px 2px #1e293b, 0 2px 6px rgba(0,0,0,0.9), 0 0 8px rgba(255,255,255,0.45)' }
+];
+
+const defaultDesign = () => ({ ttl:{x:50, y:46, s:1, d:'v'}, au:{x:50, y:88, s:1, d:'v'} });
 let S=null,me=null,code=null,base=location.origin+location.pathname,err='';
 let sel={t:null, b:null, cov:'cover_darkblue.jpg', color:'black', font:'serif', design: defaultDesign()};
 let savedCovScroll = 0;
@@ -191,8 +200,9 @@ const bk = (t, b, w, by, covInfo, interactive = false) => {
   }
   const ff = FONTS[fnt] || FONTS['serif'];
   const fw = fnt === 'delicate' ? 'font-weight:400;' : '';
-  const tc = col === 'white' ? '#fdfdfd' : '#1b2430';
-  const ts = col === 'white' ? '0 1px 4px rgba(0,0,0,0.9), 0 2px 10px rgba(0,0,0,0.8)' : '0 1px 4px rgba(255,255,255,0.9), 0 2px 10px rgba(255,255,255,0.8)';
+  const cObj = COLORS.find(c => c.k === col) || COLORS[0];
+  const tc = cObj.tc;
+  const ts = cObj.ts;
   const mx = Math.max(L(t), L(b), 1);
   const baseFs = Math.max(12, Math.floor(Math.min(1.05 * w / mx, .232 * w)));
 
@@ -252,7 +262,7 @@ function render(){
   $.style.maxWidth = '640px';
 
   const P=S.players,ph=S.phase,nm=id=>(P.find(x=>x.id===id)||{}).name||'',host=S.host===S.me;
-  const title=ph==='lobby'?'準備中':ph==='vote'?'最終投票':ph==='final'?'結果発表':`第${S.round}号／全${S.rounds}号`;
+  const title=ph==='lobby'?'準備中':ph==='vote'?'最終投票':ph==='final'?'結果発表':`第${S.round}回会議/全${S.rounds}回会議中`;
   let h=`<div class="bar"><span>部屋 ${S.code}</span><span>${title}</span></div>`;
   if(S.ver!==VER)h+=`<div class="verbanner">画面とサーバーのバージョンが合っていません。ページを再読み込みしてください。直らない場合は、GASの「デプロイを管理」から新バージョンをデプロイし直してください。</div>`;
   h+=`<div class="score">`+P.map(x=>{
@@ -286,8 +296,6 @@ function render(){
         h+=`<div style="display:flex;justify-content:center;margin-bottom:12px;">`+bk(S.hand[sel.t].s,S.hand[sel.b].s, Math.min(240,innerWidth-32), nm(S.me), sel.cov+'|'+sel.color+'|'+sel.font+'|'+JSON.stringify(sel.design), true)+`</div>`;
 
         h+=`<div style="background:rgba(0,0,0,0.4); padding:12px; border-radius:8px; margin-bottom:20px; box-shadow:inset 0 2px 6px rgba(0,0,0,0.3);">
-          <div style="font-size:13px; color:#ffe45c; margin-bottom:10px; text-align:center; font-weight:700;">※プレビュー上の文字は指で動かせます</div>
-
           <div style="display:flex; gap:6px; align-items:center; margin-bottom:8px;">
             <span style="font-size:14px; width:70px; font-weight:700;">タイトル</span>
             <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.ttl.s=Math.max(0.5, Math.round((sel.design.ttl.s-0.1)*10)/10);render()">縮小</button>
@@ -295,21 +303,18 @@ function render(){
           </div>
 
           <div style="display:flex; gap:6px; align-items:center; margin-bottom:8px;">
-            <span style="font-size:14px; width:70px; font-weight:700;">作者名</span>
-            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.au.s=Math.max(0.5, Math.round((sel.design.au.s-0.1)*10)/10);render()">縮小</button>
-            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="sel.design.au.s=Math.min(2.0, Math.round((sel.design.au.s+0.1)*10)/10);render()">拡大</button>
+            <span style="font-size:14px; width:70px; font-weight:700;">文字の向き</span>
+            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="const nd=sel.design.ttl.d==='v'?'h':'v';sel.design.ttl.d=nd;sel.design.au.d=nd;render()">縦書き ⇔ 横書き</button>
           </div>
 
-          <div style="display:flex; gap:6px; align-items:center;">
-            <span style="font-size:14px; width:70px; font-weight:700;">向き / 色</span>
-            <button class="ghost" style="padding:6px; flex:1; font-size:14px;" onclick="const nd=sel.design.ttl.d==='v'?'h':'v';sel.design.ttl.d=nd;sel.design.au.d=nd;render()">縦/横 切替</button>
-            <button class="${sel.color==='black'?'red':'ghost'}" style="padding:6px; flex:1; font-size:14px;" onclick="sel.color='black';render()">黒</button>
-            <button class="${sel.color==='white'?'red':'ghost'}" style="padding:6px; flex:1; font-size:14px;" onclick="sel.color='white';render()">白</button>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <span style="font-size:14px; width:70px; font-weight:700;">文字色</span>
+            <div style="display:flex; gap:4px; flex:1;">`+COLORS.map(c=>`<button class="${sel.color===c.k?'red':'ghost'}" style="padding:6px 2px; flex:1; font-size:13px; display:flex; align-items:center; justify-content:center; gap:3px;" onclick="sel.color='${c.k}';render()"><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${c.dot}; border:1px solid rgba(255,255,255,0.6);"></span>${c.n}</button>`).join('')+`</div>
           </div>
         </div>`;
       }
 
-      h+=`<h2>表紙デザイン</h2><div class="cov-select" onscroll="savedCovScroll=this.scrollLeft">`+COVERS.map(c=>`<div class="cov-item ${sel.cov===c.f?'sel':''}" onclick="sel.cov='${c.f}';render()"><img src="${c.f}" alt="${c.n}"><p>${c.n}</p></div>`).join('')+`</div>`;
+      h+=`<h2>表紙デザイン</h2><div class="cov-select" onscroll="savedCovScroll=this.scrollLeft">`+COVERS.map(c=>`<div class="cov-item ${sel.cov===c.f?'sel':''}" onclick="sel.cov='${c.f}';render()"><img src="${c.f}" alt=""></div>`).join('')+`</div>`;
 
       h+=`<h2>フォント</h2><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
         <button class="${sel.font==='serif'?'red':'ghost'}" style="font-family:'Noto Serif JP',serif; padding:8px 12px; font-size:14px; flex:1; min-width:80px;" onclick="sel.font='serif';render()">明朝</button>
